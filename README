@@ -1,0 +1,52 @@
+10/01/2011	by Yiding Han
+
+1. In this package
+Folders:
+bin		Compiled binary file is saved here.
+Header		C/C++ header files are located here.
+obj		Save the .obj file during the compilation. This folder is removed after "make clean".
+scripts		Useful scripts can be saved here.
+Source		C/C++ and CUDA source files are located here.
+
+Files:
+Makefile	GNU makefile.
+test.gr		Input file to the Scheduler application.
+
+Header/commandline.h	Declares the CommandLine class for the project. This class feeds the user command line parameters to the application.
+Header/common.h		Declares the basic data types used across the project.
+Header/database.h	Declares the Database class, which is used to store global data to the project.
+Header/paramproc.h	Declares the Params classes. Only used by CommandLine class.
+Header/scheduler.h	Declares the Scheduler class, which extracts the concurrent subnets.
+Header/utility.h	Declares some useful helper classes to ease programming.
+
+Source/commandline.cxx	Defines the functionality of the CommandLine class.
+Source/database.cxx	Defines the ways data are read into/write out of the Database class.
+Source/main.cxx		Where main() function is.
+Source/paramproc.cxx 	Defines the Params classes.
+*Source/scheduler.cu	Defines the functionality of Scheduler. This file is compiled by g++ and nvcc together. It links the device and host code.
+Source/utility.cxx	Defines an efficient WallClockTimer and ProgressIndicator.
+*Source/GPUKernels.cu	Defines the CUDA kenerls.
+
+Note*: These are the main files that you need to modify for your CUDA Program.
+
+2. Compile source code
+If you have nvcc setup correctly, then simple typing "make" under the main folder compiles the project. When the compilation is done, a binary file named 'Scheduler' will be located in the 'bin' directory.
+
+To clean up the project type "make clean".
+
+3. Run the application
+Navigate to the 'bin' folder and run 'Scheduler':
+./Scheduler -f ../test.gr
+
+The program will:
+ -Load the test.gr benchmark.
+ -Run the CPU algorithm to extract concurrent subnets.
+ -Write the results to a file 'output.txt'.
+
+4. Parameters
+-gpu		Turn on GPU computing.
+-nooutput	Turn off writing results to file at the end of execution.
+-noprint	Won't print percentage progress during the execution. This is useful when piping the screen output to a file.
+-schwin		Specify the size of scheduling window. Scheduling window defines the number of subnets used to color the tiles in each iteration. A wide window might extract more concurrent subnets, but will significantly slow down the process.
+-f filename	Specify the input file name.
+-o filename	Specify the output file name.
