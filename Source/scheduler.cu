@@ -219,7 +219,7 @@ int Scheduler::findConcurrencyGPU(SubNetQueue& subNetsQueue, SubNetQueue& concur
 
 
 	//run a CPU emulation for now
-	findConcurrencyCPU(subNetsQueue, concurrentSubNets, windowSize);
+	// findConcurrencyCPU(subNetsQueue, concurrentSubNets, windowSize);
 	return concurrentSubNets.size();
 }
 
