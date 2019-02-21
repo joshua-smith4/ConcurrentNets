@@ -15,6 +15,9 @@ using std::min;
 #include "GPUKernels.cu"
 #include "scheduler.h"
 
+const uint NUM_BLOCKS = 10;
+const uint THREADS_PER_BLOCK = 10;
+
 Scheduler::Scheduler(DB& _db, const CommandLine& _params) :  db(_db), params(_params)
 {
 	//initialization
@@ -216,7 +219,90 @@ int Scheduler::findConcurrencyCPU(SubNetQueue& subNetsQueue, SubNetQueue& concur
 int Scheduler::findConcurrencyGPU(SubNetQueue& subNetsQueue, SubNetQueue& concurrentSubNets, const size_t windowSize)
 {
 	//GPU implementation of findConcurrencyCPU()
+	size_t subNetCount = min(windowSize, subNetsQueue.size());
+	if (subNetCount == 0) {
+		concurrentSubNets.clear();
+		return 0;
+	}
 
+	uint2 a, b;
+	Point A, B;
+	auto hostA = new uint2[subNetCount];
+	auto hostB = new uint2[subNetCount];
+	// vector<uint2> hostA, hostB;
+	// hostA.reserve(subNetCount);
+	// hostB.reserve(subNetCount);
+	unsigned minX = db.xTiles;
+	unsigned maxX = 0;
+	unsigned minY = db.yTiles;
+	unsigned maxY = 0;
+
+	//Preparation
+	int i = 0;
+	for (SubNetQueue::reverse_iterator it = subNetsQueue.rbegin(); i < subNetCount; it++, i++) {
+		SubNet& subnet = db.nets[(*it).first].subNets[(*it).second];
+		A = subnet.a;
+		B = subnet.b;
+		a.x = min(A.x, B.x);
+		a.y = min(A.y, B.y);
+		b.x = max(A.x, B.x);
+		b.y = max(A.y, B.y);
+
+		hostA[i] = a;
+		hostB[i] = b;
+
+		if (minX > a.x)
+			minX = a.x;
+		if (minY > a.y)
+			minY = a.y;
+		if (maxX < b.x)
+			maxX = b.x;
+		if (maxY < b.y)
+			maxY = b.y;
+	}
+
+	auto colorTiles = new IdType*[db.yTiles];
+	for(unsigned j = 0; j < db.yTiles; ++j)
+	{
+		colorTiles[j] = new IdType[db.xTiles];
+		for(unsigned k = 0; k < db.xTiles; ++k)
+		{
+			colorTiles[j][k] = NO_ID;
+		}
+	}
+
+	std::size_t size = sizeof(uint2)*subNetCount;
+
+	uint2* deviceA;
+	cudaMalloc(&deviceA, sizeof(uint2)*subNetCount);
+	uint2* deviceB;
+	cudaMalloc(&deviceB, sizeof(uint2)*subNetCount);
+
+	cudaMemcpy(deviceA, hostA, size, cudaMemcpyHostToDevice);
+	cudaMemcpy(deviceB, hostB, size, cudaMemcpyHostToDevice);
+
+
+	// deallocate memory when no longer in use
+	for(unsigned j = 0; j < db.yTiles; ++j)
+	{
+		delete[] colorTiles[j];
+	}
+	delete[] colorTiles;
+
+	delete[] hostA;
+	delete[] hostB;
+
+	// auto hostA = new uint2[subNetCount];
+	// auto hostB = new uint2[subNetCount];
+	// auto pointArrayA = new uint2[subNetCount];
+	// auto pointArrayB = new uint2[subNetCount];
+	//
+	//
+	//
+	// delete[] hostA;
+	// delete[] hostB;
+	// delete[] pointArrayA;
+	// delete[] pointArrayB;
 
 	//run a CPU emulation for now
 	// findConcurrencyCPU(subNetsQueue, concurrentSubNets, windowSize);

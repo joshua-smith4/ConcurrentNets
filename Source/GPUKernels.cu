@@ -22,3 +22,7 @@ typedef unsigned int SizeType;
 typedef float CostType;
 
 //Define CUDA Kernels in this file
+__global__ void prep_noshared()
+{
+  
+}
