@@ -221,6 +221,15 @@ int Scheduler::findConcurrencyCPU(SubNetQueue& subNetsQueue, SubNetQueue& concur
 	return concurrentSubNets.size();
 }
 
+#define gpuErrchk(ans) { gpuAssert((ans), __FILE__, __LINE__); }
+inline void gpuAssert(cudaError_t code, const char *file, int line, bool abort=true)
+{
+   if (code != cudaSuccess)
+   {
+      fprintf(stderr,"GPUassert: %s %s %d\n", cudaGetErrorString(code), file, line);
+      if (abort) exit(code);
+   }
+}
 
 int Scheduler::findConcurrencyGPU(SubNetQueue& subNetsQueue, SubNetQueue& concurrentSubNets, const size_t windowSize)
 {
@@ -272,7 +281,7 @@ int Scheduler::findConcurrencyGPU(SubNetQueue& subNetsQueue, SubNetQueue& concur
 	std::size_t abSize = sizeof(uint2)*subNetCount;
 
 	uint2* deviceA;
-	cudaMalloc(&deviceA, abSize);// deallocated
+	gpuErrchk(cudaMalloc(&deviceA, abSize));// deallocated
 	uint2* deviceB;
 	cudaMalloc(&deviceB, abSize);// deallocated
 
