@@ -302,7 +302,7 @@ int Scheduler::findConcurrencyGPU(SubNetQueue& subNetsQueue, SubNetQueue& concur
 
 	histCalc_noshared<<<dimGrid, dimBlock>>>(deviceTilesWithinRoutingRegion, deviceA, deviceB, subNetCount, minY, maxY, minX, maxX, NUM_CONCURRENCY_BINS);
 	cudaError err = cudaGetLastError();
-	if(cudaSuccess != cudaGetLastError)
+	if(cudaSuccess != err)
 	{
 		std::cout << "Cuda error on histCalc: " << cudaGetErrorString(err) << "\n";
 		exit(1);
@@ -313,7 +313,7 @@ int Scheduler::findConcurrencyGPU(SubNetQueue& subNetsQueue, SubNetQueue& concur
 
 	sumHist_noshared<<<1, subNetCount>>>(deviceTilesWithinRoutingRegion, deviceRetVal, subNetCount, NUM_CONCURRENCY_BINS);
 	err = cudaGetLastError();
-	if(cudaSuccess != cudaGetLastError)
+	if(cudaSuccess != err)
 	{
 		std::cout << "Cuda error on sumHist: " << cudaGetErrorString(err) << "\n";
 		exit(1);
