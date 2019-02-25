@@ -16,8 +16,6 @@ using std::min;
 #include "GPUKernels.cu"
 #include "scheduler.h"
 
-const unsigned NUM_BLOCKS_X = 10;
-const unsigned NUM_BLOCKS_Y = 10;
 const unsigned THREADS_PER_BLOCK_X = 32;
 const unsigned THREADS_PER_BLOCK_Y = 32;
 const unsigned NUM_CONCURRENCY_BINS = 128;
@@ -74,6 +72,7 @@ int Scheduler::run()
 	timer.stop();
 
 	cout << endl << "Total computational time: " << timer.reading() << " s" << endl << endl;
+	cudaDeviceReset();
 	return 0;
 }
 
@@ -203,12 +202,12 @@ int Scheduler::findConcurrencyCPU(SubNetQueue& subNetsQueue, SubNetQueue& concur
 			}
 		}
 	}
-	std::cout << "TilesWithinRoutingRegion:\n";
-	for(int j = 0; j < subNetCount; ++j)
-	{
-		std::cout << tilesWithinRoutingRegion[j] << " ";
-	}
-	std::cout << std::endl;
+	// std::cout << "TilesWithinRoutingRegion:\n";
+	// for(int j = 0; j < subNetCount; ++j)
+	// {
+	// 	std::cout << tilesWithinRoutingRegion[j] << " ";
+	// }
+	// std::cout << std::endl;
 
 	//find out the concurrent subnets. Push them into concurrentSubNet, and erase from the subNetsQueue
 	concurrentSubNets.clear();
@@ -254,8 +253,8 @@ int Scheduler::findConcurrencyGPU(SubNetQueue& subNetsQueue, SubNetQueue& concur
 
 	uint2 a, b;
 	Point A, B;
-	uint2* hostA = new uint2[subNetCount]; // deallocated
-	uint2* hostB = new uint2[subNetCount]; // deallocated
+	uint2* hostA = (uint2*)malloc(sizeof(uint2)*subNetCount); // deallocated
+	uint2* hostB = (uint2*)malloc(sizeof(uint2)*subNetCount); // deallocated
 	unsigned minX = db.xTiles;
 	unsigned maxX = 0;
 	unsigned minY = db.yTiles;
@@ -286,13 +285,10 @@ int Scheduler::findConcurrencyGPU(SubNetQueue& subNetsQueue, SubNetQueue& concur
 	}
 
 	std::size_t abSize = sizeof(uint2)*subNetCount;
-	// std::cout << "1" << std::endl;
 	uint2* deviceA;
 	gpuErrchk(cudaMalloc(&deviceA, abSize));// deallocated
 	uint2* deviceB;
-	// std::cout << "2" << std::endl;
 	gpuErrchk(cudaMalloc(&deviceB, abSize));// deallocated
-	// std::cout << "3" << std::endl;
 
 	gpuErrchk(cudaMemcpy(deviceA, hostA, abSize, cudaMemcpyHostToDevice));
 	// std::cout << "4" << std::endl;
@@ -305,7 +301,10 @@ int Scheduler::findConcurrencyGPU(SubNetQueue& subNetsQueue, SubNetQueue& concur
 	gpuErrchk(cudaMemset(deviceTilesWithinRoutingRegion, 0, sizeof(unsigned*)*NUM_CONCURRENCY_BINS*subNetCount));
 	// std::cout << "6" << std::endl;
 
-	dim3 dimGrid(NUM_BLOCKS_X, NUM_BLOCKS_Y);
+	// set up grid sizes
+	const unsigned Nx = maxX - minX + 1;
+	const unsigned Ny = maxY - minY + 1;
+	dim3 dimGrid((Nx + THREADS_PER_BLOCK_X - 1) / THREADS_PER_BLOCK_X, (Ny + THREADS_PER_BLOCK_Y - 1) / THREADS_PER_BLOCK_Y);
 	dim3 dimBlock(THREADS_PER_BLOCK_X, THREADS_PER_BLOCK_Y);
 	// std::cout << "7" << std::endl;
 
@@ -321,6 +320,7 @@ int Scheduler::findConcurrencyGPU(SubNetQueue& subNetsQueue, SubNetQueue& concur
 	gpuErrchk(cudaMemset(deviceRetVal, 0, sizeof(unsigned)*subNetCount));
 	// std::cout << "8" << std::endl;
 
+
 	sumHist_noshared<<<1, subNetCount>>>(deviceTilesWithinRoutingRegion, deviceRetVal, subNetCount, NUM_CONCURRENCY_BINS);
 	err = cudaGetLastError();
 	if(cudaSuccess != err)
@@ -330,7 +330,7 @@ int Scheduler::findConcurrencyGPU(SubNetQueue& subNetsQueue, SubNetQueue& concur
 	}
 	// std::cout << "9" << std::endl;
 
-	unsigned* tilesWithinRoutingRegion = new unsigned[subNetCount]; // deallocated
+	unsigned* tilesWithinRoutingRegion = (unsigned*) malloc(sizeof(unsigned)*subNetCount); // deallocated
 
 	gpuErrchk(cudaMemcpy(tilesWithinRoutingRegion, deviceRetVal, sizeof(unsigned)*subNetCount, cudaMemcpyDeviceToHost));
 	// std::cout << "10" << std::endl;
@@ -356,14 +356,14 @@ int Scheduler::findConcurrencyGPU(SubNetQueue& subNetsQueue, SubNetQueue& concur
 	}
 
 	// deallocate
-	delete[] hostA;
-	delete[] hostB;
+	free(hostA);
+	free(hostB);
 	gpuErrchk(cudaFree(deviceA));
 	gpuErrchk(cudaFree(deviceB));
 
 	gpuErrchk(cudaFree(deviceTilesWithinRoutingRegion));
 	gpuErrchk(cudaFree(deviceRetVal));
-	delete[] tilesWithinRoutingRegion;
+	free(tilesWithinRoutingRegion);
 
 	return concurrentSubNets.size();
 }
