@@ -22,7 +22,12 @@ typedef unsigned int SizeType;
 typedef float CostType;
 
 //Define CUDA Kernels in this file
-__global__ void prep_noshared()
+__global__ void colorTiles_noshared(IdType** colorTiles, uint2* a, uint2* b, unsigned subNetCount, int yTiles, int xTiles, int minY, int maxY, int minX, int maxX)
 {
   
+}
+
+__global__ void countSubnets_noshared(IdType** colorTiles, unsigned* tilesWithinRoutingRegion, int minY, int maxY, int minX, int maxX)
+{
+
 }

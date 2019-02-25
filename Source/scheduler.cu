@@ -6,6 +6,7 @@
  */
 #include <iostream>
 #include <algorithm>
+#include <cstdlib>
 
 using std::cout;
 using std::endl;
@@ -169,7 +170,8 @@ int Scheduler::findConcurrencyCPU(SubNetQueue& subNetsQueue, SubNetQueue& concur
 		if (maxY < b.y)
 			maxY = b.y;
 	}
-
+	std::cout << maxY - minY << "\n";
+	std::cout << maxX - minX << "\n";
 	//color the Tiles
 	vector< vector<IdType> > colorTiles;
 	colorTiles.resize(db.yTiles);
@@ -262,13 +264,17 @@ int Scheduler::findConcurrencyGPU(SubNetQueue& subNetsQueue, SubNetQueue& concur
 	}
 
 	auto colorTiles = new IdType*[db.yTiles];
+	IdType** deviceColorTiles;
+	cudaMalloc(&deviceColorTiles, sizeof(IdType*)*db.yTiles);
 	for(unsigned j = 0; j < db.yTiles; ++j)
 	{
 		colorTiles[j] = new IdType[db.xTiles];
+		cudaMalloc(&deviceColorTiles[j], sizeof(IdType)*db.xTiles);
 		for(unsigned k = 0; k < db.xTiles; ++k)
 		{
 			colorTiles[j][k] = NO_ID;
 		}
+		cudaMemcpy(deviceColorTiles[j], colorTiles[j], sizeof(IdType)*db.xTiles, cudaMemcpyHostToDevice);
 	}
 
 	std::size_t size = sizeof(uint2)*subNetCount;
@@ -281,6 +287,14 @@ int Scheduler::findConcurrencyGPU(SubNetQueue& subNetsQueue, SubNetQueue& concur
 	cudaMemcpy(deviceA, hostA, size, cudaMemcpyHostToDevice);
 	cudaMemcpy(deviceB, hostB, size, cudaMemcpyHostToDevice);
 
+	auto hostTilesWithinRoutingRegion = new unsigned[subNetCount];
+	unsigned* deviceTilesWithinRoutingRegion;
+	cudaMalloc(&deviceTilesWithinRoutingRegion, sizeof(unsigned)*subNetCount);
+	cudaMemset(deviceTilesWithinRoutingRegion, 0, sizeof(unsigned)*subNetCount);
+
+
+	// gather return values
+	cudaMemcpy(hostTilesWithinRoutingRegion, deviceTilesWithinRoutingRegion, sizeof(unsigned)*subNetCount, cudaMemcpyDeviceToHost);
 
 	// deallocate memory when no longer in use
 	for(unsigned j = 0; j < db.yTiles; ++j)
@@ -291,21 +305,30 @@ int Scheduler::findConcurrencyGPU(SubNetQueue& subNetsQueue, SubNetQueue& concur
 
 	delete[] hostA;
 	delete[] hostB;
+	std::malloc(tilesWithinRoutingRegion);
 
-	// auto hostA = new uint2[subNetCount];
-	// auto hostB = new uint2[subNetCount];
-	// auto pointArrayA = new uint2[subNetCount];
-	// auto pointArrayB = new uint2[subNetCount];
-	//
-	//
-	//
-	// delete[] hostA;
-	// delete[] hostB;
-	// delete[] pointArrayA;
-	// delete[] pointArrayB;
+	cudaFree(deviceA);
+	cudaFree(deviceB);
 
-	//run a CPU emulation for now
-	// findConcurrencyCPU(subNetsQueue, concurrentSubNets, windowSize);
+	for(unsigned j = 0; j < db.yTiles, ++j)
+	{
+		cudaFree(deviceColorTiles[j]);
+	}
+	cudaFree(deviceColorTiles);
+
+	concurrentSubNets.clear();
+	SubNetQueue::reverse_iterator it = subNetsQueue.rbegin();
+	for (i = 0; i < subNetCount; i++) {
+		if (hostTilesWithinRoutingRegion[i] != 0
+				&& hostTilesWithinRoutingRegion[i] == (hostB[i].x - hostA[i].x + 1) * (hostB[i].y - hostA[i].y + 1)) {
+			concurrentSubNets.push_back(*it);
+			subNetsQueue.erase((++it).base());
+		}
+		else {
+			it++;
+		}
+	}
+
 	return concurrentSubNets.size();
 }
 
