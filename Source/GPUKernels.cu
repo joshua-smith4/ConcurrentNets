@@ -51,7 +51,6 @@ __global__ void histCalc_noshared(unsigned* tilesWithinRoutingRegion, IdType* co
   if (y <= yrange && x <= xrange)
   {
     unsigned binIndex = (gridDim.x*blockDim.x*y+x) % num_concurrency_bins;
-        // atomicAdd(&tilesWithinRoutingRegion[binIndex*subNetCount+i], 1);
     if(colorTiles[y*yrange+x] != NOID)
     {
       atomicAdd(&tilesWithinRoutingRegion[binIndex*subNetCount+colorTiles[y*yrange+x]], 1);
