@@ -294,8 +294,8 @@ int Scheduler::findConcurrencyGPU(SubNetQueue& subNetsQueue, SubNetQueue& concur
 	gpuErrchk(cudaMemcpy(deviceB, hostB, abSize, cudaMemcpyHostToDevice));
 
 	IdType* deviceColorTiles; // deallocated
-	gpuErrchk(cudaMalloc(&deviceColorTiles, sizeof(IdType)*(maxY-miny+1)*(maxX-minX+1)));
-	gpuErrchk(cudaMemset(deviceColorTiles, 0xFF, sizeof(IdType)*(maxY-miny+1)*(maxX-minX+1)));
+	gpuErrchk(cudaMalloc(&deviceColorTiles, sizeof(IdType)*(maxY-minY+1)*(maxX-minX+1)));
+	gpuErrchk(cudaMemset(deviceColorTiles, 0xFF, sizeof(IdType)*(maxY-minY+1)*(maxX-minX+1)));
 
 	unsigned* deviceTilesWithinRoutingRegion; // deallocated
 	gpuErrchk(cudaMalloc(&deviceTilesWithinRoutingRegion, sizeof(unsigned*)*NUM_CONCURRENCY_BINS*subNetCount));
