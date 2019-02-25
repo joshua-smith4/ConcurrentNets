@@ -21,45 +21,33 @@ typedef unsigned short CapType;
 typedef unsigned int SizeType;
 typedef float CostType;
 
-// template <unsigned N>
-// struct ParallelHistAccumulator
-// {
-// public:
-//   unsigned* bins[N];
-//   unsigned numBins;
-//   inline __device__ void init(unsigned numberOfBins)
-//   {
-//     numThreadBins = num;
-//     for(auto i = 0u; i < N; ++i)
-//     {
-//       bins[i] = new unsigned[numBins];
-//     }
-//   }
-//   inline __device__
-//   inline __device__ void cleanup()
-//   {
-//     for(auto i = 0u; i < N; ++i)
-//     {
-//       delete[] bins[i];
-//     }
-//   }
-//   inline __device__ unsigned incrementBin(unsigned bin)
-//   {
-//     return 0u;
-//   }
-//   inline __device__ unsigned* getHist()
-//   {
-//
-//   }
-// };
-
 //Define CUDA Kernels in this file
-__global__ void colorTiles_noshared(IdType** colorTiles, uint2* a, uint2* b, unsigned subNetCount, int yTiles, int xTiles, int minY, int maxY, int minX, int maxX)
+__global__ void histCalc_noshared(unsigned** tilesWithinRoutingRegion, uint2* a, uint2* b, unsigned subNetCount, int minY, int maxY, int minX, int maxX, unsigned num_concurrency_bins)
 {
-
+  int y = blockIdx.y * blockDim.y + threadIdx.y;
+  int x = blockIdx.x * blockDim.x + threadIdx.x;
+  if ((y <= maxY - minY + 1) && (x <= maxX - minX + 1))
+  {
+    unsigned binIndex = (gridDim.x*blockDim.x*y+x) % num_concurrency_bins;
+    for(int i = 0; i < subNetCount; ++i)
+    {
+      if (a[i].x <= x && b[i].x >= x && a[i].y <= y && b[i].y >= y)
+      {
+        atomicAdd(&tilesWithinRoutingRegion[binIndex][i], 1);
+        break;
+      }
+    }
+  }
 }
 
-__global__ void countSubnets_noshared(IdType** colorTiles, unsigned* tilesWithinRoutingRegion, int minY, int maxY, int minX, int maxX)
+__global__ void sumHist_noshared(unsigned** tilesWithinRoutingRegion, unsigned* returnVal, unsigned subNetCount, unsigned num_concurrency_bins)
 {
-
+  int i = threadIdx.x;
+  if(i < subNetCount)
+  {
+    for(int j = 0; j < num_concurrency_bins; ++j)
+    {
+      returnVal[i] += tilesWithinRoutingRegion[j][i];
+    }
+  }
 }

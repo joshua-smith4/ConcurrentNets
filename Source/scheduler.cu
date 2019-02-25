@@ -16,9 +16,11 @@ using std::min;
 #include "GPUKernels.cu"
 #include "scheduler.h"
 
-const unsigned NUM_BLOCKS = 10;
-const unsigned THREADS_PER_BLOCK = 10;
-const unsigned NUM_CONCURRENCY_BINS = 20;
+const unsigned NUM_BLOCKS_X = 10;
+const unsigned NUM_BLOCKS_Y = 10;
+const unsigned THREADS_PER_BLOCK_X = 32;
+const unsigned THREADS_PER_BLOCK_Y = 32;
+const unsigned NUM_CONCURRENCY_BINS = 128;
 const unsigned SUBNET_COUNT_GPU_THRESHOLD = 100;
 
 Scheduler::Scheduler(DB& _db, const CommandLine& _params) :  db(_db), params(_params)
@@ -172,8 +174,8 @@ int Scheduler::findConcurrencyCPU(SubNetQueue& subNetsQueue, SubNetQueue& concur
 		if (maxY < b.y)
 			maxY = b.y;
 	}
-	std::cout << "Y dim: " << maxY - minY << "\n";
-	std::cout << "X dim: " << maxX - minX << "\n";
+	// std::cout << "Y dim: " << maxY - minY << "\n";
+	// std::cout << "X dim: " << maxX - minX << "\n";
 	// std::cout << "subnetcount" << subNetCount<< "\n";
 	//color the Tiles
 	vector< vector<IdType> > colorTiles;
@@ -236,8 +238,8 @@ int Scheduler::findConcurrencyGPU(SubNetQueue& subNetsQueue, SubNetQueue& concur
 
 	uint2 a, b;
 	Point A, B;
-	uint2* hostA = new uint2[subNetCount];
-	uint2* hostB = new uint2[subNetCount];
+	uint2* hostA = new uint2[subNetCount]; // deallocated
+	uint2* hostB = new uint2[subNetCount]; // deallocated
 	unsigned minX = db.xTiles;
 	unsigned maxX = 0;
 	unsigned minY = db.yTiles;
@@ -270,14 +272,14 @@ int Scheduler::findConcurrencyGPU(SubNetQueue& subNetsQueue, SubNetQueue& concur
 	std::size_t abSize = sizeof(uint2)*subNetCount;
 
 	uint2* deviceA;
-	cudaMalloc(&deviceA, abSize);
+	cudaMalloc(&deviceA, abSize);// deallocated
 	uint2* deviceB;
-	cudaMalloc(&deviceB, abSize);
+	cudaMalloc(&deviceB, abSize);// deallocated
 
 	cudaMemcpy(deviceA, hostA, abSize, cudaMemcpyHostToDevice);
 	cudaMemcpy(deviceB, hostB, abSize, cudaMemcpyHostToDevice);
 
-	unsigned** deviceTilesWithinRoutingRegion;
+	unsigned** deviceTilesWithinRoutingRegion; // deallocated
 	cudaMalloc(&deviceTilesWithinRoutingRegion, sizeof(unsigned*)*NUM_CONCURRENCY_BINS);
 	for(unsigned j = 0; j < NUM_CONCURRENCY_BINS; ++j)
 	{
@@ -286,43 +288,45 @@ int Scheduler::findConcurrencyGPU(SubNetQueue& subNetsQueue, SubNetQueue& concur
 		cudaMemset(deviceTilesWithinRoutingRegion[j], 0, size);
 	}
 
+	dim3 dimGrid(NUM_BLOCKS_X, NUM_BLOCKS_Y);
+	dim3 dimBlock(THREADS_PER_BLOCK_X, THREADS_PER_BLOCK_Y);
 
+	histCalc_noshared<<<dimGrid, dimBlock>>>(deviceTilesWithinRoutingRegion, deviceA, deviceB, subNetCount, minY, maxY, minX, maxX, NUM_CONCURRENCY_BINS);
 
-	// // gather return values
-	// cudaMemcpy(hostTilesWithinRoutingRegion, deviceTilesWithinRoutingRegion, sizeof(unsigned)*subNetCount, cudaMemcpyDeviceToHost);
-	//
-	// // deallocate memory when no longer in use
-	// for(unsigned j = 0; j < db.yTiles; ++j)
-	// {
-	// 	delete[] colorTiles[j];
-	// }
-	// delete[] colorTiles;
-	//
-	// delete[] hostA;
-	// delete[] hostB;
-	// // std::free(tilesWithinRoutingRegion);
-	//
-	// cudaFree(deviceA);
-	// cudaFree(deviceB);
-	//
-	// for(unsigned j = 0; j < db.yTiles; ++j)
-	// {
-	// 	cudaFree(deviceColorTiles[j]);
-	// }
-	// cudaFree(deviceColorTiles);
-	//
-	// concurrentSubNets.clear();
-	// SubNetQueue::reverse_iterator it = subNetsQueue.rbegin();
-	// for (i = 0; i < subNetCount; i++) {
-	// 	if (hostTilesWithinRoutingRegion[i] != 0
-	// 			&& hostTilesWithinRoutingRegion[i] == (hostB[i].x - hostA[i].x + 1) * (hostB[i].y - hostA[i].y + 1)) {
-	// 		concurrentSubNets.push_back(*it);
-	// 		subNetsQueue.erase((++it).base());
-	// 	}
-	// 	else {
-	// 		it++;
-	// 	}
-	// }
+	unsigned* deviceRetVal; // deallocated
+	cudaMalloc(&deviceRetVal, sizeof(unsigned)*subNetCount);
+	cudaMemset(deviceRetVal, 0, sizeof(unsigned)*subNetCount);
+	sumHist_noshared<<<1, subNetCount>>>(deviceTilesWithinRoutingRegion, deviceRetVal, subNetCount, NUM_CONCURRENCY_BINS);
+	unsigned* tilesWithinRoutingRegion = new unsigned[subNetCount]; // deallocated
+
+	cudaMemcpy(tilesWithinRoutingRegion, deviceRetVal, sizeof(unsigned)*subNetCount, cudaMemcpyDeviceToHost);
+
+	concurrentSubNets.clear();
+	SubNetQueue::reverse_iterator it = subNetsQueue.rbegin();
+	for (i = 0; i < subNetCount; i++) {
+		if (tilesWithinRoutingRegion[i] != 0
+				&& tilesWithinRoutingRegion[i] == (hostB[i].x - hostA[i].x + 1) * (hostB[i].y - hostA[i].y + 1)) {
+			concurrentSubNets.push_back(*it);
+			subNetsQueue.erase((++it).base());
+		}
+		else {
+			it++;
+		}
+	}
+
+	// deallocate
+	delete[] hostA;
+	delete[] hostB;
+	cudaFree(deviceA);
+	cudaFree(deviceB);
+
+	for(unsigned j = 0; j < NUM_CONCURRENCY_BINS; ++j)
+	{
+		cudaFree(deviceTilesWithinRoutingRegion[j]);
+	}
+	cudaFree(deviceTilesWithinRoutingRegion);
+	cudaFree(deviceRetVal);
+	delete[] tilesWithinRoutingRegion;
 
 	return concurrentSubNets.size();
 }
