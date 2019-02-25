@@ -170,8 +170,9 @@ int Scheduler::findConcurrencyCPU(SubNetQueue& subNetsQueue, SubNetQueue& concur
 		if (maxY < b.y)
 			maxY = b.y;
 	}
-	std::cout << maxY - minY << "\n";
-	std::cout << maxX - minX << "\n";
+	// std::cout << maxY - minY << "\n";
+	// std::cout << maxX - minX << "\n";
+	std::cout << "subnetcount" << subNetCount<< "\n";
 	//color the Tiles
 	vector< vector<IdType> > colorTiles;
 	colorTiles.resize(db.yTiles);
@@ -215,7 +216,6 @@ int Scheduler::findConcurrencyCPU(SubNetQueue& subNetsQueue, SubNetQueue& concur
 
 	return concurrentSubNets.size();
 }
-
 
 
 int Scheduler::findConcurrencyGPU(SubNetQueue& subNetsQueue, SubNetQueue& concurrentSubNets, const size_t windowSize)

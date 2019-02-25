@@ -8,6 +8,7 @@ public:
   unsigned* bins[N];
   inline __device__ void init(unsigned numBins)
   {
+    
     for(auto i = 0u; i < N; ++i)
     {
       bins[i] = new unsigned[numBins];
