@@ -203,6 +203,12 @@ int Scheduler::findConcurrencyCPU(SubNetQueue& subNetsQueue, SubNetQueue& concur
 			}
 		}
 	}
+	std::cout << "TilesWithinRoutingRegion:\n";
+	for(int j = 0; j < subNetCount; ++j)
+	{
+		std::cout << tilesWithinRoutingRegion[j] << " ";
+	}
+	std::cout << std::endl;
 
 	//find out the concurrent subnets. Push them into concurrentSubNet, and erase from the subNetsQueue
 	concurrentSubNets.clear();
