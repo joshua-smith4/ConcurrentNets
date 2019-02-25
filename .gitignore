@@ -39,5 +39,5 @@
 *.app
 
 bin/*
-output.txt
+*output.txt
 obj/*
