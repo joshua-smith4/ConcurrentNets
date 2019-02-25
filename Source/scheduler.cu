@@ -340,12 +340,12 @@ int Scheduler::findConcurrencyGPU(SubNetQueue& subNetsQueue, SubNetQueue& concur
 	gpuErrchk(cudaMemcpy(tilesWithinRoutingRegion, deviceRetVal, sizeof(unsigned)*subNetCount, cudaMemcpyDeviceToHost));
 	// std::cout << "10" << std::endl;
 
-	std::cout << "TilesWithinRoutingRegion:\n";
-	for(int j = 0; j < subNetCount; ++j)
-	{
-		std::cout << tilesWithinRoutingRegion[j] << " ";
-	}
-	std::cout << std::endl;
+	// std::cout << "TilesWithinRoutingRegion:\n";
+	// for(int j = 0; j < subNetCount; ++j)
+	// {
+	// 	std::cout << tilesWithinRoutingRegion[j] << " ";
+	// }
+	// std::cout << std::endl;
 
 	concurrentSubNets.clear();
 	SubNetQueue::reverse_iterator it = subNetsQueue.rbegin();
