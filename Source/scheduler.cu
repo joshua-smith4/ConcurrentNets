@@ -221,113 +221,113 @@ int Scheduler::findConcurrencyCPU(SubNetQueue& subNetsQueue, SubNetQueue& concur
 int Scheduler::findConcurrencyGPU(SubNetQueue& subNetsQueue, SubNetQueue& concurrentSubNets, const size_t windowSize)
 {
 	//GPU implementation of findConcurrencyCPU()
-	size_t subNetCount = min(windowSize, subNetsQueue.size());
-	if (subNetCount == 0) {
-		concurrentSubNets.clear();
-		return 0;
-	}
-
-	uint2 a, b;
-	Point A, B;
-	auto hostA = new uint2[subNetCount];
-	auto hostB = new uint2[subNetCount];
-	// vector<uint2> hostA, hostB;
-	// hostA.reserve(subNetCount);
-	// hostB.reserve(subNetCount);
-	unsigned minX = db.xTiles;
-	unsigned maxX = 0;
-	unsigned minY = db.yTiles;
-	unsigned maxY = 0;
-
-	//Preparation
-	int i = 0;
-	for (SubNetQueue::reverse_iterator it = subNetsQueue.rbegin(); i < subNetCount; it++, i++) {
-		SubNet& subnet = db.nets[(*it).first].subNets[(*it).second];
-		A = subnet.a;
-		B = subnet.b;
-		a.x = min(A.x, B.x);
-		a.y = min(A.y, B.y);
-		b.x = max(A.x, B.x);
-		b.y = max(A.y, B.y);
-
-		hostA[i] = a;
-		hostB[i] = b;
-
-		if (minX > a.x)
-			minX = a.x;
-		if (minY > a.y)
-			minY = a.y;
-		if (maxX < b.x)
-			maxX = b.x;
-		if (maxY < b.y)
-			maxY = b.y;
-	}
-
-	auto colorTiles = new IdType*[db.yTiles];
-	IdType** deviceColorTiles;
-	cudaMalloc(&deviceColorTiles, sizeof(IdType*)*db.yTiles);
-	for(unsigned j = 0; j < db.yTiles; ++j)
-	{
-		colorTiles[j] = new IdType[db.xTiles];
-		cudaMalloc(&deviceColorTiles[j], sizeof(IdType)*db.xTiles);
-		for(unsigned k = 0; k < db.xTiles; ++k)
-		{
-			colorTiles[j][k] = NO_ID;
-		}
-		cudaMemcpy(deviceColorTiles[j], colorTiles[j], sizeof(IdType)*db.xTiles, cudaMemcpyHostToDevice);
-	}
-
-	std::size_t size = sizeof(uint2)*subNetCount;
-
-	uint2* deviceA;
-	cudaMalloc(&deviceA, sizeof(uint2)*subNetCount);
-	uint2* deviceB;
-	cudaMalloc(&deviceB, sizeof(uint2)*subNetCount);
-
-	cudaMemcpy(deviceA, hostA, size, cudaMemcpyHostToDevice);
-	cudaMemcpy(deviceB, hostB, size, cudaMemcpyHostToDevice);
-
-	auto hostTilesWithinRoutingRegion = new unsigned[subNetCount];
-	unsigned* deviceTilesWithinRoutingRegion;
-	cudaMalloc(&deviceTilesWithinRoutingRegion, sizeof(unsigned)*subNetCount);
-	cudaMemset(deviceTilesWithinRoutingRegion, 0, sizeof(unsigned)*subNetCount);
-
-
-	// gather return values
-	cudaMemcpy(hostTilesWithinRoutingRegion, deviceTilesWithinRoutingRegion, sizeof(unsigned)*subNetCount, cudaMemcpyDeviceToHost);
-
-	// deallocate memory when no longer in use
-	for(unsigned j = 0; j < db.yTiles; ++j)
-	{
-		delete[] colorTiles[j];
-	}
-	delete[] colorTiles;
-
-	delete[] hostA;
-	delete[] hostB;
-	std::malloc(tilesWithinRoutingRegion);
-
-	cudaFree(deviceA);
-	cudaFree(deviceB);
-
-	for(unsigned j = 0; j < db.yTiles, ++j)
-	{
-		cudaFree(deviceColorTiles[j]);
-	}
-	cudaFree(deviceColorTiles);
-
-	concurrentSubNets.clear();
-	SubNetQueue::reverse_iterator it = subNetsQueue.rbegin();
-	for (i = 0; i < subNetCount; i++) {
-		if (hostTilesWithinRoutingRegion[i] != 0
-				&& hostTilesWithinRoutingRegion[i] == (hostB[i].x - hostA[i].x + 1) * (hostB[i].y - hostA[i].y + 1)) {
-			concurrentSubNets.push_back(*it);
-			subNetsQueue.erase((++it).base());
-		}
-		else {
-			it++;
-		}
-	}
+	// size_t subNetCount = min(windowSize, subNetsQueue.size());
+	// if (subNetCount == 0) {
+	// 	concurrentSubNets.clear();
+	// 	return 0;
+	// }
+	//
+	// uint2 a, b;
+	// Point A, B;
+	// auto hostA = new uint2[subNetCount];
+	// auto hostB = new uint2[subNetCount];
+	// // vector<uint2> hostA, hostB;
+	// // hostA.reserve(subNetCount);
+	// // hostB.reserve(subNetCount);
+	// unsigned minX = db.xTiles;
+	// unsigned maxX = 0;
+	// unsigned minY = db.yTiles;
+	// unsigned maxY = 0;
+	//
+	// //Preparation
+	// int i = 0;
+	// for (SubNetQueue::reverse_iterator it = subNetsQueue.rbegin(); i < subNetCount; it++, i++) {
+	// 	SubNet& subnet = db.nets[(*it).first].subNets[(*it).second];
+	// 	A = subnet.a;
+	// 	B = subnet.b;
+	// 	a.x = min(A.x, B.x);
+	// 	a.y = min(A.y, B.y);
+	// 	b.x = max(A.x, B.x);
+	// 	b.y = max(A.y, B.y);
+	//
+	// 	hostA[i] = a;
+	// 	hostB[i] = b;
+	//
+	// 	if (minX > a.x)
+	// 		minX = a.x;
+	// 	if (minY > a.y)
+	// 		minY = a.y;
+	// 	if (maxX < b.x)
+	// 		maxX = b.x;
+	// 	if (maxY < b.y)
+	// 		maxY = b.y;
+	// }
+	//
+	// auto colorTiles = new IdType*[db.yTiles];
+	// IdType** deviceColorTiles;
+	// cudaMalloc(&deviceColorTiles, sizeof(IdType*)*db.yTiles);
+	// for(unsigned j = 0; j < db.yTiles; ++j)
+	// {
+	// 	colorTiles[j] = new IdType[db.xTiles];
+	// 	cudaMalloc(&deviceColorTiles[j], sizeof(IdType)*db.xTiles);
+	// 	for(unsigned k = 0; k < db.xTiles; ++k)
+	// 	{
+	// 		colorTiles[j][k] = NO_ID;
+	// 	}
+	// 	cudaMemcpy(deviceColorTiles[j], colorTiles[j], sizeof(IdType)*db.xTiles, cudaMemcpyHostToDevice);
+	// }
+	//
+	// std::size_t size = sizeof(uint2)*subNetCount;
+	//
+	// uint2* deviceA;
+	// cudaMalloc(&deviceA, sizeof(uint2)*subNetCount);
+	// uint2* deviceB;
+	// cudaMalloc(&deviceB, sizeof(uint2)*subNetCount);
+	//
+	// cudaMemcpy(deviceA, hostA, size, cudaMemcpyHostToDevice);
+	// cudaMemcpy(deviceB, hostB, size, cudaMemcpyHostToDevice);
+	//
+	// auto hostTilesWithinRoutingRegion = new unsigned[subNetCount];
+	// unsigned* deviceTilesWithinRoutingRegion;
+	// cudaMalloc(&deviceTilesWithinRoutingRegion, sizeof(unsigned)*subNetCount);
+	// cudaMemset(deviceTilesWithinRoutingRegion, 0, sizeof(unsigned)*subNetCount);
+	//
+	//
+	// // gather return values
+	// cudaMemcpy(hostTilesWithinRoutingRegion, deviceTilesWithinRoutingRegion, sizeof(unsigned)*subNetCount, cudaMemcpyDeviceToHost);
+	//
+	// // deallocate memory when no longer in use
+	// for(unsigned j = 0; j < db.yTiles; ++j)
+	// {
+	// 	delete[] colorTiles[j];
+	// }
+	// delete[] colorTiles;
+	//
+	// delete[] hostA;
+	// delete[] hostB;
+	// // std::free(tilesWithinRoutingRegion);
+	//
+	// cudaFree(deviceA);
+	// cudaFree(deviceB);
+	//
+	// for(unsigned j = 0; j < db.yTiles; ++j)
+	// {
+	// 	cudaFree(deviceColorTiles[j]);
+	// }
+	// cudaFree(deviceColorTiles);
+	//
+	// concurrentSubNets.clear();
+	// SubNetQueue::reverse_iterator it = subNetsQueue.rbegin();
+	// for (i = 0; i < subNetCount; i++) {
+	// 	if (hostTilesWithinRoutingRegion[i] != 0
+	// 			&& hostTilesWithinRoutingRegion[i] == (hostB[i].x - hostA[i].x + 1) * (hostB[i].y - hostA[i].y + 1)) {
+	// 		concurrentSubNets.push_back(*it);
+	// 		subNetsQueue.erase((++it).base());
+	// 	}
+	// 	else {
+	// 		it++;
+	// 	}
+	// }
 
 	return concurrentSubNets.size();
 }
