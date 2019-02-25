@@ -22,7 +22,7 @@ typedef unsigned int SizeType;
 typedef float CostType;
 
 //Define CUDA Kernels in this file
-__global__ void histCalc_noshared(unsigned** tilesWithinRoutingRegion, uint2* a, uint2* b, unsigned subNetCount, int minY, int maxY, int minX, int maxX, unsigned num_concurrency_bins)
+__global__ void histCalc_noshared(unsigned* tilesWithinRoutingRegion, uint2* a, uint2* b, unsigned subNetCount, int minY, int maxY, int minX, int maxX, unsigned num_concurrency_bins)
 {
   int y = blockIdx.y * blockDim.y + threadIdx.y;
   int x = blockIdx.x * blockDim.x + threadIdx.x;
@@ -33,21 +33,21 @@ __global__ void histCalc_noshared(unsigned** tilesWithinRoutingRegion, uint2* a,
     {
       if (a[i].x <= x && b[i].x >= x && a[i].y <= y && b[i].y >= y)
       {
-        atomicAdd(&tilesWithinRoutingRegion[binIndex][i], 1);
+        atomicAdd(&tilesWithinRoutingRegion[binIndex*subNetCount+i], 1);
         break;
       }
     }
   }
 }
 
-__global__ void sumHist_noshared(unsigned** tilesWithinRoutingRegion, unsigned* returnVal, unsigned subNetCount, unsigned num_concurrency_bins)
+__global__ void sumHist_noshared(unsigned* tilesWithinRoutingRegion, unsigned* returnVal, unsigned subNetCount, unsigned num_concurrency_bins)
 {
   int i = threadIdx.x;
   if(i < subNetCount)
   {
     for(int j = 0; j < num_concurrency_bins; ++j)
     {
-      returnVal[i] += tilesWithinRoutingRegion[j][i];
+      returnVal[i] += tilesWithinRoutingRegion[j*subNetCount+i];
     }
   }
 }

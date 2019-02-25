@@ -293,14 +293,9 @@ int Scheduler::findConcurrencyGPU(SubNetQueue& subNetsQueue, SubNetQueue& concur
 
 	std::cout << "5" << std::endl;
 
-	unsigned** deviceTilesWithinRoutingRegion; // deallocated
-	gpuErrchk(cudaMalloc(&deviceTilesWithinRoutingRegion, sizeof(unsigned*)*NUM_CONCURRENCY_BINS));
-	for(unsigned j = 0; j < NUM_CONCURRENCY_BINS; ++j)
-	{
-		std::size_t size = sizeof(unsigned)*subNetCount;
-		gpuErrchk(cudaMalloc(&deviceTilesWithinRoutingRegion[j], size));
-		gpuErrchk(cudaMemset(deviceTilesWithinRoutingRegion[j], 0, size));
-	}
+	unsigned* deviceTilesWithinRoutingRegion; // deallocated
+	gpuErrchk(cudaMalloc(&deviceTilesWithinRoutingRegion, sizeof(unsigned*)*NUM_CONCURRENCY_BINS*subNetCount));
+	gpuErrchk(cudaMemset(deviceTilesWithinRoutingRegion, 0, sizeof(unsigned*)*NUM_CONCURRENCY_BINS*subNetCount));
 	std::cout << "6" << std::endl;
 
 	dim3 dimGrid(NUM_BLOCKS_X, NUM_BLOCKS_Y);
