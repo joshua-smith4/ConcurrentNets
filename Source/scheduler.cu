@@ -236,8 +236,8 @@ int Scheduler::findConcurrencyGPU(SubNetQueue& subNetsQueue, SubNetQueue& concur
 
 	uint2 a, b;
 	Point A, B;
-	auto hostA = new uint2[subNetCount];
-	auto hostB = new uint2[subNetCount];
+	uint2* hostA = new uint2[subNetCount];
+	uint2* hostB = new uint2[subNetCount];
 	unsigned minX = db.xTiles;
 	unsigned maxX = 0;
 	unsigned minY = db.yTiles;
