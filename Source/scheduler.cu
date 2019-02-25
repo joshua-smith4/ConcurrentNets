@@ -21,7 +21,7 @@ const unsigned NUM_BLOCKS_Y = 10;
 const unsigned THREADS_PER_BLOCK_X = 32;
 const unsigned THREADS_PER_BLOCK_Y = 32;
 const unsigned NUM_CONCURRENCY_BINS = 128;
-const unsigned SUBNET_COUNT_GPU_THRESHOLD = 100;
+const unsigned SUBNET_COUNT_GPU_THRESHOLD = 20;
 
 Scheduler::Scheduler(DB& _db, const CommandLine& _params) :  db(_db), params(_params)
 {
@@ -239,6 +239,7 @@ int Scheduler::findConcurrencyGPU(SubNetQueue& subNetsQueue, SubNetQueue& concur
 		concurrentSubNets.clear();
 		return 0;
 	}
+	std::cout << "Subnet Count: " << subNetCount << std::endl;
 	// if number of subnets is small enough, run on CPU
 	if(subNetCount <= SUBNET_COUNT_GPU_THRESHOLD)
 	{
@@ -347,10 +348,6 @@ int Scheduler::findConcurrencyGPU(SubNetQueue& subNetsQueue, SubNetQueue& concur
 	gpuErrchk(cudaFree(deviceA));
 	gpuErrchk(cudaFree(deviceB));
 
-	// for(unsigned j = 0; j < NUM_CONCURRENCY_BINS; ++j)
-	// {
-	// 	gpuErrchk(cudaFree(deviceTilesWithinRoutingRegion[j]));
-	// }
 	gpuErrchk(cudaFree(deviceTilesWithinRoutingRegion));
 	gpuErrchk(cudaFree(deviceRetVal));
 	delete[] tilesWithinRoutingRegion;
