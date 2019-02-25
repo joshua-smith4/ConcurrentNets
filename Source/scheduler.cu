@@ -274,8 +274,8 @@ int Scheduler::findConcurrencyGPU(SubNetQueue& subNetsQueue, SubNetQueue& concur
 	uint2* deviceB;
 	cudaMalloc(&deviceB, abSize);
 
-	cudaMemcpy(deviceA, hostA, size, cudaMemcpyHostToDevice);
-	cudaMemcpy(deviceB, hostB, size, cudaMemcpyHostToDevice);
+	cudaMemcpy(deviceA, hostA, abSize, cudaMemcpyHostToDevice);
+	cudaMemcpy(deviceB, hostB, abSize, cudaMemcpyHostToDevice);
 
 	unsigned** deviceTilesWithinRoutingRegion;
 	cudaMalloc(&deviceTilesWithinRoutingRegion, sizeof(unsigned*)*NUM_CONCURRENCY_BINS);
