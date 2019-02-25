@@ -291,25 +291,32 @@ int Scheduler::findConcurrencyGPU(SubNetQueue& subNetsQueue, SubNetQueue& concur
 	gpuErrchk(cudaMalloc(&deviceB, abSize));// deallocated
 
 	gpuErrchk(cudaMemcpy(deviceA, hostA, abSize, cudaMemcpyHostToDevice));
-	// std::cout << "4" << std::endl;
 	gpuErrchk(cudaMemcpy(deviceB, hostB, abSize, cudaMemcpyHostToDevice));
 
-	// std::cout << "5" << std::endl;
+	IdType* deviceColorTiles; // deallocated
+	gpuErrchk(cudaMalloc(&deviceColorTiles, sizeof(IdType)*(maxY-miny+1)*(maxX-minX+1)));
+	gpuErrchk(cudaMemset(deviceColorTiles, 0xFF, sizeof(IdType)*(maxY-miny+1)*(maxX-minX+1)));
 
 	unsigned* deviceTilesWithinRoutingRegion; // deallocated
 	gpuErrchk(cudaMalloc(&deviceTilesWithinRoutingRegion, sizeof(unsigned*)*NUM_CONCURRENCY_BINS*subNetCount));
 	gpuErrchk(cudaMemset(deviceTilesWithinRoutingRegion, 0, sizeof(unsigned*)*NUM_CONCURRENCY_BINS*subNetCount));
-	// std::cout << "6" << std::endl;
 
 	// set up grid sizes
 	const unsigned Nx = maxX - minX + 1;
 	const unsigned Ny = maxY - minY + 1;
 	dim3 dimGrid((Nx + THREADS_PER_BLOCK_X - 1) / THREADS_PER_BLOCK_X, (Ny + THREADS_PER_BLOCK_Y - 1) / THREADS_PER_BLOCK_Y);
 	dim3 dimBlock(THREADS_PER_BLOCK_X, THREADS_PER_BLOCK_Y);
-	// std::cout << "7" << std::endl;
 
-	histCalc_noshared<<<dimGrid, dimBlock>>>(deviceTilesWithinRoutingRegion, deviceA, deviceB, subNetCount, minY, maxY, minX, maxX, NUM_CONCURRENCY_BINS);
+	colorTiles_noshared<<<dimGrid, dimBlock>>>(deviceColorTiles, deviceA, deviceB, subNetCount, minY, maxY, minX, maxX);
 	cudaError err = cudaGetLastError();
+	if(cudaSuccess != err)
+	{
+		std::cout << "Cuda error on histCalc: " << cudaGetErrorString(err) << "\n";
+		exit(1);
+	}
+
+	histCalc_noshared<<<dimGrid, dimBlock>>>(deviceTilesWithinRoutingRegion, deviceColorTiles, subNetCount, minY, maxY, minX, maxX, NUM_CONCURRENCY_BINS);
+	err = cudaGetLastError();
 	if(cudaSuccess != err)
 	{
 		std::cout << "Cuda error on histCalc: " << cudaGetErrorString(err) << "\n";
@@ -318,8 +325,6 @@ int Scheduler::findConcurrencyGPU(SubNetQueue& subNetsQueue, SubNetQueue& concur
 	unsigned* deviceRetVal; // deallocated
 	gpuErrchk(cudaMalloc(&deviceRetVal, sizeof(unsigned)*subNetCount));
 	gpuErrchk(cudaMemset(deviceRetVal, 0, sizeof(unsigned)*subNetCount));
-	// std::cout << "8" << std::endl;
-
 
 	sumHist_noshared<<<1, subNetCount>>>(deviceTilesWithinRoutingRegion, deviceRetVal, subNetCount, NUM_CONCURRENCY_BINS);
 	err = cudaGetLastError();
@@ -361,6 +366,7 @@ int Scheduler::findConcurrencyGPU(SubNetQueue& subNetsQueue, SubNetQueue& concur
 	gpuErrchk(cudaFree(deviceA));
 	gpuErrchk(cudaFree(deviceB));
 
+	gpuErrchk(cudaFree(deviceColorTiles));
 	gpuErrchk(cudaFree(deviceTilesWithinRoutingRegion));
 	gpuErrchk(cudaFree(deviceRetVal));
 	free(tilesWithinRoutingRegion);

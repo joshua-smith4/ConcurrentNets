@@ -22,20 +22,39 @@ typedef unsigned int SizeType;
 typedef float CostType;
 
 //Define CUDA Kernels in this file
-__global__ void histCalc_noshared(unsigned* tilesWithinRoutingRegion, uint2* a, uint2* b, unsigned subNetCount, int minY, int maxY, int minX, int maxX, unsigned num_concurrency_bins)
+__global__ void colorTiles_noshared(unsigned* colorTiles, uint2* a, uint2* b, unsigned subNetCount, int minY, int maxY, int minX, int maxX)
 {
   int y = blockIdx.y * blockDim.y + threadIdx.y;
   int x = blockIdx.x * blockDim.x + threadIdx.x;
-  if ((y <= maxY - minY + 1) && (x <= maxX - minX + 1))
+  int yrange = maxY - minY + 1;
+  int xrange = maxX - minX + 1;
+  if (y <= yrange && x <= xrange)
   {
-    unsigned binIndex = (gridDim.x*blockDim.x*y+x) % num_concurrency_bins;
     for(int i = 0; i < subNetCount; ++i)
     {
       if (a[i].x <= x && b[i].x >= x && a[i].y <= y && b[i].y >= y)
       {
-        atomicAdd(&tilesWithinRoutingRegion[binIndex*subNetCount+i], 1);
+        colorTiles[y*yrange+x] = i;
         break;
       }
+    }
+  }
+}
+
+
+__global__ void histCalc_noshared(unsigned* tilesWithinRoutingRegion, IdType* colorTiles, unsigned subNetCount, int minY, int maxY, int minX, int maxX, unsigned num_concurrency_bins)
+{
+  int y = blockIdx.y * blockDim.y + threadIdx.y;
+  int x = blockIdx.x * blockDim.x + threadIdx.x;
+  int yrange = maxY - minY + 1;
+  int xrange = maxX - minX + 1;
+  if (y <= yrange && x <= xrange)
+  {
+    unsigned binIndex = (gridDim.x*blockDim.x*y+x) % num_concurrency_bins;
+        // atomicAdd(&tilesWithinRoutingRegion[binIndex*subNetCount+i], 1);
+    if(colorTiles[y*yrange+x] != NOID)
+    {
+      atomicAdd(&tilesWithinRoutingRegion[binIndex*subNetCount+colorTiles[y*yrange+x]], 1);
     }
   }
 }
