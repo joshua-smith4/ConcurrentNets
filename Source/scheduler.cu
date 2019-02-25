@@ -347,10 +347,10 @@ int Scheduler::findConcurrencyGPU(SubNetQueue& subNetsQueue, SubNetQueue& concur
 	gpuErrchk(cudaFree(deviceA));
 	gpuErrchk(cudaFree(deviceB));
 
-	for(unsigned j = 0; j < NUM_CONCURRENCY_BINS; ++j)
-	{
-		gpuErrchk(cudaFree(deviceTilesWithinRoutingRegion[j]));
-	}
+	// for(unsigned j = 0; j < NUM_CONCURRENCY_BINS; ++j)
+	// {
+	// 	gpuErrchk(cudaFree(deviceTilesWithinRoutingRegion[j]));
+	// }
 	gpuErrchk(cudaFree(deviceTilesWithinRoutingRegion));
 	gpuErrchk(cudaFree(deviceRetVal));
 	delete[] tilesWithinRoutingRegion;
