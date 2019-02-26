@@ -63,7 +63,7 @@ int main() {
       (Nrow + THREADS_PER_BLOCK_Y - 1) / THREADS_PER_BLOCK_Y;
 
   dim3 gridDim(NUM_BLOCKS_X, NUM_BLOCKS_Y);
-  dim3 blockDim(THREADS_PER_BLOCK_X, THREADS_PER_BLOCK_Y);
+  dim3 blockDim(THREADS_PER_BLOCK_Y, THREADS_PER_BLOCK_X);
   addVec<<<gridDim, blockDim>>>(d_a, pitch_a, d_b, pitch_b, d_c, pitch_c, Nrow, Ncol);
 
   int c[Nrow][Ncol];
@@ -82,22 +82,6 @@ int main() {
     }
     std::cout << std::endl;
   }
-  // for (int i = 0; i < N; ++i)
-  // {
-  //   for(int j = 0; j < N; ++j)
-  //   {
-  //     std::cout << b[i][j] << " ";
-  //   }
-  //   std::cout << std::endl;
-  // }
-  // for (int i = 0; i < N; ++i)
-  // {
-  //   for(int j = 0; j < N; ++j)
-  //   {
-  //     std::cout << c[i][j] << " ";
-  //   }
-  //   std::cout << std::endl;
-  // }
   for (int i = 0; i < Nrow; ++i)
   {
     for(int j = 0; j < Ncol; ++j)
