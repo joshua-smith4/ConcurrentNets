@@ -58,7 +58,7 @@ __global__ void colorTiles_shared(unsigned* colorTiles, size_t pitchColorTiles, 
     {
       if(ab_shared[i].x != a[i].x || ab_shared[i].y != a[i].y || ab_shared[i+subNetCount].x != b[i].x || ab_shared[i+subNetCount].y != b[i].y)
       {
-        printf("ERROR: (%d %d) (%d %d) (%d %d) (%d %d)",ab_shared[i].x, a[i].x, ab_shared[i].y, a[i].y, ab_shared[i+subNetCount].x, b[i].x, ab_shared[i+subNetCount].y, b[i].y);
+        printf("ERROR: (%d %d) (%d %d) (%d %d) (%d %d) index %d\n",ab_shared[i].x, a[i].x, ab_shared[i].y, a[i].y, ab_shared[i+subNetCount].x, b[i].x, ab_shared[i+subNetCount].y, b[i].y, index);
       }
     }
   }
