@@ -62,7 +62,7 @@ int main() {
   const unsigned NUM_BLOCKS_COL =
       (Ncol + THREADS_PER_BLOCK_COL - 1) / THREADS_PER_BLOCK_COL;
 
-  dim3 gridDim(NUM_BLOCKS_COL, NUM_BLOCKS_ROW);
+  dim3 gridDim(NUM_BLOCKS_ROW, NUM_BLOCKS_COL);
   dim3 blockDim(THREADS_PER_BLOCK_COL, THREADS_PER_BLOCK_ROW);
   addVec<<<gridDim, blockDim>>>(d_a, pitch_a, d_b, pitch_b, d_c, pitch_c, Nrow, Ncol);
 
