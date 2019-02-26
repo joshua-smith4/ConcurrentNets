@@ -58,9 +58,9 @@ int main() {
   const unsigned THREADS_PER_BLOCK_X = 5;
   const unsigned THREADS_PER_BLOCK_Y = 5;
   const unsigned NUM_BLOCKS_X =
-      (Ncol + THREADS_PER_BLOCK_X - 1) / THREADS_PER_BLOCK_X;
+      (Nrow + THREADS_PER_BLOCK_X - 1) / THREADS_PER_BLOCK_X;
   const unsigned NUM_BLOCKS_Y =
-      (Nrow + THREADS_PER_BLOCK_Y - 1) / THREADS_PER_BLOCK_Y;
+      (Ncol + THREADS_PER_BLOCK_Y - 1) / THREADS_PER_BLOCK_Y;
 
   dim3 gridDim(NUM_BLOCKS_X, NUM_BLOCKS_Y);
   dim3 blockDim(THREADS_PER_BLOCK_X, THREADS_PER_BLOCK_Y);
