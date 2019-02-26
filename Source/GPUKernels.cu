@@ -41,24 +41,24 @@ __global__ void colorTiles_noshared(unsigned* colorTiles, size_t pitchColorTiles
   }
 }
 
-// __device__ __shared__ extern uint2 ab_shared[];
 __global__ void colorTiles_shared(unsigned* colorTiles, size_t pitchColorTiles, uint2* a, uint2* b, unsigned subNetCount, int minY, int maxY, int minX, int maxX)
 {
   int x = blockIdx.x * blockDim.x + threadIdx.x + minX;
   int y = blockIdx.y * blockDim.y + threadIdx.y + minY;
   extern __shared__ uint2 ab_shared[];
-  int index = blockDim.x*gridDim.x*(blockIdx.y*blockDim.y+threadIdx.y)+blockDim.x*blockIdx.x+threadIdx.x;
+  unsigned index = blockDim.x*gridDim.x*(blockIdx.y*blockDim.y+threadIdx.y)+blockDim.x*blockIdx.x+threadIdx.x;
   if(index < subNetCount)
-  {
-    // printf("index %d filling from array a: (%d, %d) subnet: %d\n", index, blockIdx.x * blockDim.x + threadIdx.x, blockIdx.y * blockDim.y + threadIdx.y, subNetCount);
     ab_shared[index] = a[index];
-  }
   else if(index < subNetCount*2)
-  {
-    // printf("index %d filling from array b: (%d, %d) subnet: %d\n", index, blockIdx.x * blockDim.x + threadIdx.x, blockIdx.y * blockDim.y + threadIdx.y, subNetCount);
     ab_shared[index] = b[index-subNetCount];
-  }
   __syncthreads();
+  for(int i = 0; i < subNetCount; ++i)
+  {
+    if(ab_shared[i].x != a[i].x || ab_shared[i].y != a[i].y || ab_shared[i+subNetCount].x != b[i].x || ab_shared[i+subNetCount].y != b[i].y)
+    {
+      printf("ERROR: (%d %d) (%d %d) (%d %d) (%d %d)",ab_shared[i].x, a[i].x, ab_shared[i].y, a[i].y, ab_shared[i+subNetCount].x, b[i].x, ab_shared[i+subNetCount].y, b[i].y);
+    }
+  }
   if (y >= minY && y <= maxY && x >= minX && x <= maxX)
   {
     IdType* elem = (IdType*)((char*)colorTiles + y * pitchColorTiles) + x;
