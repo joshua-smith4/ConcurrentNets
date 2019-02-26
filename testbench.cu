@@ -18,6 +18,7 @@ __global__ void addVec(int *a, size_t pitch_a, int *b, size_t pitch_b, int *c, s
   }
 }
 
+
 int main() {
   const unsigned Nrow = 10;
   const unsigned Ncol = 20;
