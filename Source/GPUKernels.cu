@@ -24,10 +24,8 @@ typedef float CostType;
 //Define CUDA Kernels in this file
 __global__ void colorTiles_noshared(unsigned* colorTiles, size_t pitchColorTiles, uint2* a, uint2* b, unsigned subNetCount, int minY, int maxY, int minX, int maxX)
 {
-  int y = blockIdx.y * blockDim.y + threadIdx.y + minY;
   int x = blockIdx.x * blockDim.x + threadIdx.x + minX;
-  int yrange = maxY - minY + 1;
-  int xrange = maxX - minX + 1;
+  int y = blockIdx.y * blockDim.y + threadIdx.y + minY;
   if (y >= minY && y <= maxY && x >= minX && x <= maxX)
   {
     IdType* elem = (IdType*)((char*)colorTiles + y * pitchColorTiles) + x;
@@ -45,11 +43,9 @@ __global__ void colorTiles_noshared(unsigned* colorTiles, size_t pitchColorTiles
 
 __global__ void histCalc_noshared(unsigned* tilesWithinRoutingRegion, IdType* colorTiles, unsigned subNetCount, int minY, int maxY, int minX, int maxX, unsigned num_concurrency_bins)
 {
-  int y = blockIdx.y * blockDim.y + threadIdx.y;
-  int x = blockIdx.x * blockDim.x + threadIdx.x;
-  int yrange = maxY - minY + 1;
-  int xrange = maxX - minX + 1;
-  if (y <= yrange && x <= xrange)
+  int x = blockIdx.x * blockDim.x + threadIdx.x + minX;
+  int y = blockIdx.y * blockDim.y + threadIdx.y + minY;
+  if (y >= minY && y <= maxY && x >= minX && x <= maxX)
   {
     unsigned binIndex = (gridDim.x*blockDim.x*y+x) % num_concurrency_bins;
     if(colorTiles[y*yrange+x] != NOID)

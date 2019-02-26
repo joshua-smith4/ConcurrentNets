@@ -309,17 +309,16 @@ int Scheduler::findConcurrencyGPU(SubNetQueue& subNetsQueue, SubNetQueue& concur
 
 	// set up grid sizes
 
-	dim3 dimGrid((Ny + THREADS_PER_BLOCK_Y - 1) / THREADS_PER_BLOCK_Y, (Nx + THREADS_PER_BLOCK_X - 1) / THREADS_PER_BLOCK_X);
+	dim3 dimGrid((Nx + THREADS_PER_BLOCK_X - 1) / THREADS_PER_BLOCK_X, (Ny + THREADS_PER_BLOCK_Y - 1) / THREADS_PER_BLOCK_Y);
 	dim3 dimBlock(THREADS_PER_BLOCK_Y, THREADS_PER_BLOCK_X);
 
-	colorTiles_noshared<<<dimGrid, dimBlock>>>(deviceColorTiles, deviceA, deviceB, subNetCount, minY, maxY, minX, maxX);
+	colorTiles_noshared<<<dimGrid, dimBlock>>>(deviceColorTiles, d_pitchColorTiles, deviceA, deviceB, subNetCount, minY, maxY, minX, maxX);
 	cudaError err = cudaGetLastError();
 	if(cudaSuccess != err)
 	{
-		std::cout << "Cuda error on histCalc: " << cudaGetErrorString(err) << "\n";
+		std::cout << "Cuda error on colorTiles: " << cudaGetErrorString(err) << "\n";
 		exit(1);
 	}
-	// cudaDeviceSynchronize();
 
 	histCalc_noshared<<<dimGrid, dimBlock>>>(deviceTilesWithinRoutingRegion, deviceColorTiles, subNetCount, minY, maxY, minX, maxX, NUM_CONCURRENCY_BINS);
 	err = cudaGetLastError();
@@ -328,7 +327,6 @@ int Scheduler::findConcurrencyGPU(SubNetQueue& subNetsQueue, SubNetQueue& concur
 		std::cout << "Cuda error on histCalc: " << cudaGetErrorString(err) << "\n";
 		exit(1);
 	}
-	// cudaDeviceSynchronize();
 
 	unsigned* deviceRetVal; // deallocated
 	gpuErrchk(cudaMalloc((void**)&deviceRetVal, sizeof(unsigned)*subNetCount));
