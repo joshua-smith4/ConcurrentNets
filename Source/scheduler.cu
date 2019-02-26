@@ -237,7 +237,7 @@ int Scheduler::findConcurrencyGPU(SubNetQueue& subNetsQueue, SubNetQueue& concur
 		return 0;
 	}
 
-	if number of subnets is small enough, run on CPU
+	// if number of subnets is small enough, run on CPU
 	if(subNetCount <= SUBNET_COUNT_GPU_THRESHOLD)
 	{
 		return this->findConcurrencyCPU(subNetsQueue, concurrentSubNets, windowSize);
