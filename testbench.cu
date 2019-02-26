@@ -9,7 +9,7 @@ __global__ void addVec(int *a, size_t pitch_a, int *b, size_t pitch_b, int *c, s
 {
   int i = blockIdx.x * blockDim.x + threadIdx.x;
   int j = blockIdx.y * blockDim.y + threadIdx.y;
-  if (i < Ncol && j < Nrow)
+  if (i < Nrow && j < Ncol)
   {
     int* aElem = (int*)((char*)a + j * pitch_a) + i;
     int* bElem = (int*)((char*)b + j * pitch_b) + i;
