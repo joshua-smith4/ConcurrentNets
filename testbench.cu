@@ -74,14 +74,14 @@ int main() {
   cudaFree(d_b);
   cudaFree(d_c);
 
-  // for (int i = 0; i < Nrow; ++i)
-  // {
-  //   for(int j = 0; j < Ncol; ++j)
-  //   {
-  //     std::cout << a[i][j] << " ";
-  //   }
-  //   std::cout << std::endl;
-  // }
+  for (int i = 0; i < Nrow; ++i)
+  {
+    for(int j = 0; j < Ncol; ++j)
+    {
+      std::cout << "(" << a[i][j] << "+" << b[i][j] << "=" << c[i][j] << ") ";
+    }
+    std::cout << std::endl;
+  }
   // for (int i = 0; i < N; ++i)
   // {
   //   for(int j = 0; j < N; ++j)
