@@ -47,15 +47,15 @@ __global__ void colorTiles_shared(unsigned* colorTiles, size_t pitchColorTiles, 
   int x = blockIdx.x * blockDim.x + threadIdx.x + minX;
   int y = blockIdx.y * blockDim.y + threadIdx.y + minY;
   extern __shared__ uint2 ab_shared[];
-  int index = blockDim.x*gridDim.x*(blockIdx.y*blockDim.y+threadIdx.y)+threadIdx.x;
+  int index = blockDim.x*gridDim.x*(blockIdx.y*blockDim.y+threadIdx.y)+blockDim.x*blockIdx.x+threadIdx.x;
   if(index < subNetCount)
   {
-    printf("index %d filling from array a: (%d, %d) subnet: %d\n", index, blockIdx.x * blockDim.x + threadIdx.x, blockIdx.y * blockDim.y + threadIdx.y, subNetCount);
+    // printf("index %d filling from array a: (%d, %d) subnet: %d\n", index, blockIdx.x * blockDim.x + threadIdx.x, blockIdx.y * blockDim.y + threadIdx.y, subNetCount);
     ab_shared[index] = a[index];
   }
   else if(index < subNetCount*2)
   {
-    printf("index %d filling from array b: (%d, %d) subnet: %d\n", index, blockIdx.x * blockDim.x + threadIdx.x, blockIdx.y * blockDim.y + threadIdx.y, subNetCount);
+    // printf("index %d filling from array b: (%d, %d) subnet: %d\n", index, blockIdx.x * blockDim.x + threadIdx.x, blockIdx.y * blockDim.y + threadIdx.y, subNetCount);
     ab_shared[index] = b[index];
   }
   __syncthreads();
