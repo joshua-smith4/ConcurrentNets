@@ -18,8 +18,8 @@ using std::min;
 
 const unsigned THREADS_PER_BLOCK_X = 32;
 const unsigned THREADS_PER_BLOCK_Y = 32;
-const unsigned NUM_CONCURRENCY_BINS = 32;
-const unsigned SUBNET_COUNT_GPU_THRESHOLD = 100;
+const unsigned NUM_CONCURRENCY_BINS = 128;
+const unsigned SUBNET_COUNT_GPU_THRESHOLD = 0;
 
 Scheduler::Scheduler(DB& _db, const CommandLine& _params) :  db(_db), params(_params)
 {
