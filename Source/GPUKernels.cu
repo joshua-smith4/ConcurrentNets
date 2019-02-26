@@ -46,7 +46,7 @@ __global__ void colorTiles_shared(unsigned* colorTiles, size_t pitchColorTiles, 
   int x = blockIdx.x * blockDim.x + threadIdx.x + minX;
   int y = blockIdx.y * blockDim.y + threadIdx.y + minY;
   extern __shared__ uint2 ab_shared[];
-  unsigned index = blockDim.x*gridDim.x*(blockIdx.y*blockDim.y+threadIdx.y)+blockDim.x*blockIdx.x+threadIdx.x;
+  unsigned index = blockDim.x*threadIdx.y+threadIdx.x;
   if(index < subNetCount)
     ab_shared[index] = a[index];
   else if(index < subNetCount*2)
