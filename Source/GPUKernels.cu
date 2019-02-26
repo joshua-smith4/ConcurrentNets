@@ -40,24 +40,20 @@ __global__ void colorTiles_noshared(unsigned* colorTiles, size_t pitchColorTiles
   }
 }
 
-__device__ __shared__ extern uint2 ab_shared[];
+// __device__ __shared__ extern uint2 ab_shared[];
 __global__ void colorTiles_shared(unsigned* colorTiles, size_t pitchColorTiles, uint2* a, uint2* b, unsigned subNetCount, int minY, int maxY, int minX, int maxX)
 {
   int x = blockIdx.x * blockDim.x + threadIdx.x + minX;
   int y = blockIdx.y * blockDim.y + threadIdx.y + minY;
-  uint2* a_shared = (uint2*)ab_shared;
-  uint2* b_shared = (uint2*)&a_shared[subNetCount];
+  extern __shared__ uint2 ab_shared[];
   int index = blockDim.x*gridDim.x*(blockIdx.y*blockDim.y+threadIdx.y)+threadIdx.x;
-  if(index < subNetCount*2)
+  if(index < subNetCount)
   {
-    if(index < subNetCount)
-    {
-      a_shared[index] = a[index];
-    }
-    else
-    {
-      b_shared[index] = b[index];
-    }
+    ab_shared[index] = a[index];
+  }
+  else if(index < subNetCount*2)
+  {
+    ab_shared[index] = b[index];
   }
   __syncthreads();
   if (y >= minY && y <= maxY && x >= minX && x <= maxX)
