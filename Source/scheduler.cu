@@ -318,11 +318,11 @@ int Scheduler::findConcurrencyGPU(SubNetQueue& subNetsQueue, SubNetQueue& concur
 	cudaMemset(deviceRetVal, 0, sizeof(unsigned)*subNetCount);
 
 	sumHist_noshared<<<1, subNetCount>>>(deviceTilesWithinRoutingRegion, d_pitchTilesWithinRoutingRegion, deviceRetVal, subNetCount, NUM_CONCURRENCY_BINS);
-
+	std::cout << "finished sumHist\n";
 	unsigned tilesWithinRoutingRegion[subNetCount];
 
 	cudaMemcpy(tilesWithinRoutingRegion, deviceRetVal, sizeof(unsigned)*subNetCount, cudaMemcpyDeviceToHost);
-
+	std::cout << "finished copy retval\n";
 	concurrentSubNets.clear();
 	SubNetQueue::reverse_iterator it = subNetsQueue.rbegin();
 	for (i = 0; i < subNetCount; i++) {
