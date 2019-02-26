@@ -11,9 +11,9 @@ __global__ void addVec(int *a, size_t pitch_a, int *b, size_t pitch_b, int *c, s
   int j = blockIdx.y * blockDim.y + threadIdx.y;
   if (i < Nrow && j < Ncol)
   {
-    int* aElem = (int*)((char*)a + i * pitch_a) + j;
-    int* bElem = (int*)((char*)b + i * pitch_b) + j;
-    int* cElem = (int*)((char*)c + i * pitch_c) + j;
+    int* aElem = (int*)((char*)a + j * pitch_a) + i;
+    int* bElem = (int*)((char*)b + j * pitch_b) + i;
+    int* cElem = (int*)((char*)c + j * pitch_c) + i;
     *cElem = *aElem + *bElem;
   }
 }
@@ -63,7 +63,7 @@ int main() {
       (Ncol + THREADS_PER_BLOCK_COL - 1) / THREADS_PER_BLOCK_COL;
 
   dim3 gridDim(NUM_BLOCKS_ROW, NUM_BLOCKS_COL);
-  dim3 blockDim(THREADS_PER_BLOCK_ROW, THREADS_PER_BLOCK_COL);
+  dim3 blockDim(THREADS_PER_BLOCK_COL, THREADS_PER_BLOCK_ROW);
   addVec<<<gridDim, blockDim>>>(d_a, pitch_a, d_b, pitch_b, d_c, pitch_c, Nrow, Ncol);
 
   int c[Nrow][Ncol];
