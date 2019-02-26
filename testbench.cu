@@ -14,7 +14,7 @@ __global__ void addVec(int *a, size_t pitch_a, int *b, size_t pitch_b, int *c, s
     // int* aElem = (int*)((char*)a + j * pitch_a) + i;
     // int* bElem = (int*)((char*)b + j * pitch_b) + i;
     int* cElem = (int*)((char*)c + j * pitch_c) + i;
-    *cElem = i;
+    *cElem = j;
   }
 }
 
