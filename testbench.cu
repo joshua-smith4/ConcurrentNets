@@ -43,6 +43,7 @@ int main() {
 
   // std::generate(vec_a.begin(), vec_a.end(), [&](){ return dis(gen); });
   // std::generate(vec_b.begin(), vec_b.end(), [&](){ return dis(gen); });
+  cudaFree(0);
   std::cout << "finished generating numbers\n";
   int *d_a, *d_b, *d_c;
   std::size_t pitch_a, pitch_b, pitch_c;
