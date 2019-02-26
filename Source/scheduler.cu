@@ -305,7 +305,7 @@ int Scheduler::findConcurrencyGPU(SubNetQueue& subNetsQueue, SubNetQueue& concur
 	dim3 dimBlock(THREADS_PER_BLOCK_X, THREADS_PER_BLOCK_Y);
 
 	colorTiles_shared<<<dimGrid, dimBlock, sizeof(uint2)*subNetCount*2>>>(deviceColorTiles, d_pitchColorTiles, deviceA, deviceB, subNetCount, minY, maxY, minX, maxX);
-
+	std::cout << "finished colorTiles\n";
 	histCalc_noshared<<<dimGrid, dimBlock>>>(deviceTilesWithinRoutingRegion, d_pitchTilesWithinRoutingRegion, deviceColorTiles, d_pitchColorTiles, subNetCount, minY, maxY, minX, maxX, NUM_CONCURRENCY_BINS);
 
 	unsigned* deviceRetVal; // deallocated
