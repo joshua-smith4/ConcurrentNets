@@ -9,11 +9,11 @@ __global__ void addVec(int *a, size_t pitch_a, int *b, size_t pitch_b, int *c, s
 {
   int i = blockIdx.x * blockDim.x + threadIdx.x;
   int j = blockIdx.y * blockDim.y + threadIdx.y;
-  if (i < Nrow && j < Ncol)
+  if (i < Ncol && j < Nrow)
   {
-    int* aElem = (int*)((char*)a + i * pitch_a) + j;
-    int* bElem = (int*)((char*)b + i * pitch_b) + j;
-    int* cElem = (int*)((char*)c + i * pitch_c) + j;
+    int* aElem = (int*)((char*)a + j * pitch_a) + i;
+    int* bElem = (int*)((char*)b + j * pitch_b) + i;
+    int* cElem = (int*)((char*)c + j * pitch_c) + i;
     *cElem = *aElem + * bElem;
   }
 }
@@ -58,9 +58,9 @@ int main() {
   const unsigned THREADS_PER_BLOCK_X = 5;
   const unsigned THREADS_PER_BLOCK_Y = 5;
   const unsigned NUM_BLOCKS_X =
-      (Nrow + THREADS_PER_BLOCK_X - 1) / THREADS_PER_BLOCK_X;
+      (Ncol + THREADS_PER_BLOCK_X - 1) / THREADS_PER_BLOCK_X;
   const unsigned NUM_BLOCKS_Y =
-      (Ncol + THREADS_PER_BLOCK_Y - 1) / THREADS_PER_BLOCK_Y;
+      (Nrow + THREADS_PER_BLOCK_Y - 1) / THREADS_PER_BLOCK_Y;
 
   dim3 gridDim(NUM_BLOCKS_X, NUM_BLOCKS_Y);
   dim3 blockDim(THREADS_PER_BLOCK_X, THREADS_PER_BLOCK_Y);
