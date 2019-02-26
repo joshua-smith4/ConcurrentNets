@@ -312,7 +312,7 @@ int Scheduler::findConcurrencyGPU(SubNetQueue& subNetsQueue, SubNetQueue& concur
 	}
 	std::cout << "finished colorTiles\n";
 	histCalc_noshared<<<dimGrid, dimBlock>>>(deviceTilesWithinRoutingRegion, d_pitchTilesWithinRoutingRegion, deviceColorTiles, d_pitchColorTiles, subNetCount, minY, maxY, minX, maxX, NUM_CONCURRENCY_BINS);
-
+	std::cout << "finished histCalc\n";
 	unsigned* deviceRetVal; // deallocated
 	cudaMalloc(&deviceRetVal, sizeof(unsigned)*subNetCount);
 	cudaMemset(deviceRetVal, 0, sizeof(unsigned)*subNetCount);
