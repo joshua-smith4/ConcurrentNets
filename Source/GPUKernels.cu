@@ -52,13 +52,13 @@ __global__ void colorTiles_shared(unsigned* colorTiles, size_t pitchColorTiles, 
   else if(index < subNetCount*2)
     ab_shared[index] = b[index-subNetCount];
   __syncthreads();
-  for(int i = 0; i < subNetCount; ++i)
-  {
-    if(ab_shared[i].x != a[i].x || ab_shared[i].y != a[i].y || ab_shared[i+subNetCount].x != b[i].x || ab_shared[i+subNetCount].y != b[i].y)
-    {
-      printf("ERROR: (%d %d) (%d %d) (%d %d) (%d %d)",ab_shared[i].x, a[i].x, ab_shared[i].y, a[i].y, ab_shared[i+subNetCount].x, b[i].x, ab_shared[i+subNetCount].y, b[i].y);
-    }
-  }
+  // for(int i = 0; i < subNetCount; ++i)
+  // {
+  //   if(ab_shared[i].x != a[i].x || ab_shared[i].y != a[i].y || ab_shared[i+subNetCount].x != b[i].x || ab_shared[i+subNetCount].y != b[i].y)
+  //   {
+  //     printf("ERROR: (%d %d) (%d %d) (%d %d) (%d %d)",ab_shared[i].x, a[i].x, ab_shared[i].y, a[i].y, ab_shared[i+subNetCount].x, b[i].x, ab_shared[i+subNetCount].y, b[i].y);
+  //   }
+  // }
   if (y >= minY && y <= maxY && x >= minX && x <= maxX)
   {
     IdType* elem = (IdType*)((char*)colorTiles + y * pitchColorTiles) + x;
