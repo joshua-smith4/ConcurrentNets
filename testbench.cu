@@ -20,23 +20,25 @@ __global__ void addVec(int *a, size_t pitch_a, int *b, size_t pitch_b, int *c, s
 
 int main() {
   const unsigned N = 10;
-  std::random_device rd;
-  std::mt19937 gen(rd());
-  std::uniform_int_distribution<> dis(1, 10000);
-  int **a = (int**)std::malloc(sizeof(int *) * N);
+  // std::random_device rd;
+  // std::mt19937 gen(rd());
+  // std::uniform_int_distribution<> dis(1, 100);
+  int a[N][N];
   for (int i = 0; i < N; ++i)
   {
-    a[i] = (int*)std::malloc(sizeof(int) * N);
-    for (int j = 0; j < N; ++j)
+    for(int j = 0; j < N; ++j)
+    {
       a[i][j] = rand() % 100;
+    }
   }
 
-  int **b = (int**)std::malloc(sizeof(int *) * N);
+  int b[N][N];
   for (int i = 0; i < N; ++i)
   {
-    b[i] = (int*)std::malloc(sizeof(int) * N);
-    for (int j = 0; j < N; ++j)
+    for(int j = 0; j < N; ++j)
+    {
       b[i][j] = rand() % 100;
+    }
   }
   // std::generate(vec_a.begin(), vec_a.end(), [&](){ return dis(gen); });
   // std::generate(vec_b.begin(), vec_b.end(), [&](){ return dis(gen); });
@@ -48,7 +50,7 @@ int main() {
   cudaMallocPitch(&d_c, &pitch_c, sizeof(int)*N, N);
 
   cudaMemcpy2D(d_a, pitch_a, a, sizeof(int)*N, sizeof(int)*N, N, cudaMemcpyHostToDevice);
-  cudaMemcpy2D(d_b, pitch_a, a, sizeof(int)*N, sizeof(int)*N, N, cudaMemcpyHostToDevice);
+  cudaMemcpy2D(d_b, pitch_b, b, sizeof(int)*N, sizeof(int)*N, N, cudaMemcpyHostToDevice);
 
   const unsigned THREADS_PER_BLOCK_X = 10;
   const unsigned THREADS_PER_BLOCK_Y = 10;
@@ -61,11 +63,8 @@ int main() {
   dim3 blockDim(THREADS_PER_BLOCK_Y, THREADS_PER_BLOCK_X);
   addVec<<<gridDim, blockDim>>>(d_a, pitch_a, d_b, pitch_b, d_c, pitch_c, N);
 
-  int **c = (int**)std::malloc(sizeof(int *) * N);
-  for(int i = 0; i < N; ++i)
-  {
-    c[i] = (int*)std::malloc(sizeof(int)*N);
-  }
+  int c[N][N];
+
   cudaMemcpy2D(c, sizeof(int)*N, d_c, pitch_c, sizeof(int) * N, N, cudaMemcpyDeviceToHost);
 
   cudaFree(d_a);
@@ -104,20 +103,5 @@ int main() {
     }
   }
   std::cout << "Passed!\n";
-
-  for(int i = 0; i < N; ++i)
-  {
-    std::free(a[i]);
-  }
-  std::free(a);
-  for(int i = 0; i < N; ++i)
-  {
-    std::free(b[i]);
-  }
-  std::free(b);
-  for(int i = 0; i < N; ++i)
-  {
-    std::free(c[i]);
-  }
-  std::free(c);
+  return 0;
 }
