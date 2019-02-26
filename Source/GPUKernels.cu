@@ -8,6 +8,7 @@
 #include <cuda_runtime.h>
 #include <math.h>
 #include <cuda.h>
+#include <stdio.h>
 
 #define NOID   0xFFFFFFFF
 
