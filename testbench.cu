@@ -14,7 +14,7 @@ __global__ void addVec(int *a, size_t pitch_a, int *b, size_t pitch_b, int *c, s
     int* aElem = (int*)((char*)a + j * pitch_a) + i;
     int* bElem = (int*)((char*)b + j * pitch_b) + i;
     int* cElem = (int*)((char*)c + j * pitch_c) + i;
-    *c = *a + *b;
+    *cElem = *aElem + *bElem;
   }
 }
 
@@ -26,7 +26,7 @@ int main() {
   int **a = (int**)std::malloc(sizeof(int *) * N);
   for (int i = 0; i < N; ++i)
   {
-    a[i] = std::malloc(sizeof(int) * N);
+    a[i] = (int*)std::malloc(sizeof(int) * N);
     for (int j = 0; j < N; ++j)
       a[i][j] = rand() % 100;
   }
@@ -34,7 +34,7 @@ int main() {
   int **b = (int**)std::malloc(sizeof(int *) * N);
   for (int i = 0; i < N; ++i)
   {
-    b[i] = std::malloc(sizeof(int) * N);
+    b[i] = (int*)std::malloc(sizeof(int) * N);
     for (int j = 0; j < N; ++j)
       b[i][j] = rand() % 100;
   }
@@ -59,12 +59,12 @@ int main() {
 
   dim3 gridDim(NUM_BLOCKS_Y, NUM_BLOCKS_X);
   dim3 blockDim(THREADS_PER_BLOCK_Y, THREADS_PER_BLOCK_X);
-  addVec<<<NUM_BLOCKS, THREADS_PER_BLOCK>>>(d_a, d_b, d_c, N);
+  addVec<<<gridDim, blockDim>>>(d_a, pitch_a, d_b, pitch_b, d_c, pitch_c, N);
 
   int **c = (int**)std::malloc(sizeof(int *) * N);
   for(int i = 0; i < N; ++i)
   {
-    c[i] = std::malloc(sizeof(int)*N)
+    c[i] = (int*)std::malloc(sizeof(int)*N);
   }
   cudaMemcpy2D(c, sizeof(int)*N, d_c, pitch_c, sizeof(int) * N, N, cudaMemcpyDeviceToHost);
 
