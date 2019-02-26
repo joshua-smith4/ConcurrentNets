@@ -311,19 +311,22 @@ int Scheduler::findConcurrencyGPU(SubNetQueue& subNetsQueue, SubNetQueue& concur
 		std::cout << cudaGetErrorString(err) << "\n";
 	}
 	cudaDeviceSynchronize();
-	std::cout << "finished colorTiles\n";
+	// std::cout << "finished colorTiles\n";
 	histCalc_noshared<<<dimGrid, dimBlock>>>(deviceTilesWithinRoutingRegion, d_pitchTilesWithinRoutingRegion, deviceColorTiles, d_pitchColorTiles, subNetCount, minY, maxY, minX, maxX, NUM_CONCURRENCY_BINS);
-	std::cout << "finished histCalc\n";
+	cudaDeviceSynchronize();
+	// std::cout << "finished histCalc\n";
 	unsigned* deviceRetVal; // deallocated
 	cudaMalloc(&deviceRetVal, sizeof(unsigned)*subNetCount);
 	cudaMemset(deviceRetVal, 0, sizeof(unsigned)*subNetCount);
 
 	sumHist_noshared<<<1, subNetCount>>>(deviceTilesWithinRoutingRegion, d_pitchTilesWithinRoutingRegion, deviceRetVal, subNetCount, NUM_CONCURRENCY_BINS);
-	std::cout << "finished sumHist\n";
+	cudaDeviceSynchronize();
+	// std::cout << "finished sumHist\n";
 	unsigned tilesWithinRoutingRegion[subNetCount];
 
 	cudaMemcpy(tilesWithinRoutingRegion, deviceRetVal, sizeof(unsigned)*subNetCount, cudaMemcpyDeviceToHost);
-	std::cout << "finished copy retval\n";
+	cudaDeviceSynchronize();
+	// std::cout << "finished copy retval\n";
 	concurrentSubNets.clear();
 	SubNetQueue::reverse_iterator it = subNetsQueue.rbegin();
 	for (i = 0; i < subNetCount; i++) {
