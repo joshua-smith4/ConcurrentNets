@@ -341,7 +341,7 @@ int Scheduler::findConcurrencyGPU(SubNetQueue& subNetsQueue, SubNetQueue& concur
 	}
 	// cudaDeviceSynchronize();
 
-	unsigned* tilesWithinRoutingRegion = (unsigned*) malloc(sizeof(unsigned)*subNetCount); // deallocated
+	unsigned tilesWithinRoutingRegion[subNetCount];
 
 	gpuErrchk(cudaMemcpy(tilesWithinRoutingRegion, deviceRetVal, sizeof(unsigned)*subNetCount, cudaMemcpyDeviceToHost));
 
@@ -366,15 +366,13 @@ int Scheduler::findConcurrencyGPU(SubNetQueue& subNetsQueue, SubNetQueue& concur
 	}
 
 	// deallocate
-	free(hostA);
-	free(hostB);
 	gpuErrchk(cudaFree(deviceA));
 	gpuErrchk(cudaFree(deviceB));
 
 	gpuErrchk(cudaFree(deviceColorTiles));
 	gpuErrchk(cudaFree(deviceTilesWithinRoutingRegion));
 	gpuErrchk(cudaFree(deviceRetVal));
-	free(tilesWithinRoutingRegion);
+	// free(tilesWithinRoutingRegion);
 
 	return concurrentSubNets.size();
 }

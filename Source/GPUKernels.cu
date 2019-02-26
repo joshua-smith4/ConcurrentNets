@@ -47,7 +47,7 @@ __global__ void histCalc_noshared(unsigned* tilesWithinRoutingRegion, size_t pit
   int y = blockIdx.y * blockDim.y + threadIdx.y + minY;
   if (y >= minY && y <= maxY && x >= minX && x <= maxX)
   {
-    IdType* elem = (IdType*)((char*)colorTiles + y * pitchColorTiles) + x;
+    IdType* elem = (IdType*)((char*)colorTiles + y * pitchColor) + x;
     if(*elem != NOID)
     {
       unsigned* tileElem = (unsigned*)((char*)tilesWithinRoutingRegion + ((blockDim.x*gridDim.x*(blockIdx.y*blockDim.y+threadIdx.y)+threadIdx.x) % num_concurrency_bins) * pitchTiles) + (*elem);
