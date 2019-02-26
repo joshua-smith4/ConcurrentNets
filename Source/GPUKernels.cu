@@ -40,6 +40,38 @@ __global__ void colorTiles_noshared(unsigned* colorTiles, size_t pitchColorTiles
   }
 }
 
+__global__ void colorTiles_shared(unsigned* colorTiles, size_t pitchColorTiles, uint2* a, uint2* b, unsigned subNetCount, int minY, int maxY, int minX, int maxX)
+{
+  int x = blockIdx.x * blockDim.x + threadIdx.x + minX;
+  int y = blockIdx.y * blockDim.y + threadIdx.y + minY;
+  __shared__ uint2 a_shared[subNetCount];
+  __shared__ uint2 b_shared[subNetCount];
+  int index = blockDim.x*gridDim.x*(blockIdx.y*blockDim.y+threadIdx.y)+threadIdx.x;
+  if(index < subNetCount*2)
+  {
+    if(index < subNetCount)
+    {
+      a_shared[index] = a[index];
+    }
+    else
+    {
+      b_shared[index] = b[index];
+    }
+  }
+  __syncthreads();
+  if (y >= minY && y <= maxY && x >= minX && x <= maxX)
+  {
+    IdType* elem = (IdType*)((char*)colorTiles + y * pitchColorTiles) + x;
+    for(int i = 0; i < subNetCount; ++i)
+    {
+      if (a_shared[i].x <= x && b_shared[i].x >= x && a_shared[i].y <= y && b_shared[i].y >= y)
+      {
+        *elem = i;
+        break;
+      }
+    }
+  }
+}
 
 __global__ void histCalc_noshared(unsigned* tilesWithinRoutingRegion, size_t pitchTiles, IdType* colorTiles, size_t pitchColor, unsigned subNetCount, int minY, int maxY, int minX, int maxX, unsigned num_concurrency_bins)
 {

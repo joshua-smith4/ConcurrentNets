@@ -304,7 +304,7 @@ int Scheduler::findConcurrencyGPU(SubNetQueue& subNetsQueue, SubNetQueue& concur
 	dim3 dimGrid((Nx + THREADS_PER_BLOCK_X - 1) / THREADS_PER_BLOCK_X, (Ny + THREADS_PER_BLOCK_Y - 1) / THREADS_PER_BLOCK_Y);
 	dim3 dimBlock(THREADS_PER_BLOCK_X, THREADS_PER_BLOCK_Y);
 
-	colorTiles_noshared<<<dimGrid, dimBlock>>>(deviceColorTiles, d_pitchColorTiles, deviceA, deviceB, subNetCount, minY, maxY, minX, maxX);
+	colorTiles_shared<<<dimGrid, dimBlock>>>(deviceColorTiles, d_pitchColorTiles, deviceA, deviceB, subNetCount, minY, maxY, minX, maxX);
 
 	histCalc_noshared<<<dimGrid, dimBlock>>>(deviceTilesWithinRoutingRegion, d_pitchTilesWithinRoutingRegion, deviceColorTiles, d_pitchColorTiles, subNetCount, minY, maxY, minX, maxX, NUM_CONCURRENCY_BINS);
 
