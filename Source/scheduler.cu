@@ -298,17 +298,19 @@ int Scheduler::findConcurrencyGPU(SubNetQueue& subNetsQueue, SubNetQueue& concur
 	const unsigned Ny = maxY - minY + 1;
 
 	IdType* deviceColorTiles; // deallocated
-	gpuErrchk(cudaMalloc((void**)&deviceColorTiles, sizeof(IdType)*Ny*Nx));
-	gpuErrchk(cudaMemset(deviceColorTiles, 0xFF, sizeof(IdType)*(maxY-minY+1)*(maxX-minX+1)));
+	std::size_t d_pitchColorTiles;
+	gpuErrchk(cudaMallocPitch(&deviceColorTiles, &d_pitchColorTiles, sizeof(IdType)*db.yTiles, db.xTiles));
+	gpuErrchk(cudaMemset2D(deviceColorTiles, d_pitchColorTiles, 0xFF, sizeof(IdType)*db.yTiles, db.xTiles));
 
 	unsigned* deviceTilesWithinRoutingRegion; // deallocated
-	gpuErrchk(cudaMalloc((void**)&deviceTilesWithinRoutingRegion, sizeof(unsigned*)*NUM_CONCURRENCY_BINS*subNetCount));
-	gpuErrchk(cudaMemset(deviceTilesWithinRoutingRegion, 0, sizeof(unsigned*)*NUM_CONCURRENCY_BINS*subNetCount));
+	std::size_t d_pitchTilesWithinRoutingRegion;
+	gpuErrchk(cudaMallocPitch(&deviceTilesWithinRoutingRegion, &d_pitchTilesWithinRoutingRegion, sizeof(unsigned)*NUM_CONCURRENCY_BINS, subNetCount));
+	gpuErrchk(cudaMemset2D(deviceTilesWithinRoutingRegion, d_pitchTilesWithinRoutingRegion, 0, sizeof(unsigned)*NUM_CONCURRENCY_BINS, subNetCount));
 
 	// set up grid sizes
 
-	dim3 dimGrid((Nx + THREADS_PER_BLOCK_X - 1) / THREADS_PER_BLOCK_X, (Ny + THREADS_PER_BLOCK_Y - 1) / THREADS_PER_BLOCK_Y);
-	dim3 dimBlock(THREADS_PER_BLOCK_X, THREADS_PER_BLOCK_Y);
+	dim3 dimGrid((Ny + THREADS_PER_BLOCK_Y - 1) / THREADS_PER_BLOCK_Y, (Nx + THREADS_PER_BLOCK_X - 1) / THREADS_PER_BLOCK_X);
+	dim3 dimBlock(THREADS_PER_BLOCK_Y, THREADS_PER_BLOCK_X);
 
 	colorTiles_noshared<<<dimGrid, dimBlock>>>(deviceColorTiles, deviceA, deviceB, subNetCount, minY, maxY, minX, maxX);
 	cudaError err = cudaGetLastError();

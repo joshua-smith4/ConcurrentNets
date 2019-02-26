@@ -22,19 +22,20 @@ typedef unsigned int SizeType;
 typedef float CostType;
 
 //Define CUDA Kernels in this file
-__global__ void colorTiles_noshared(unsigned* colorTiles, uint2* a, uint2* b, unsigned subNetCount, int minY, int maxY, int minX, int maxX)
+__global__ void colorTiles_noshared(unsigned* colorTiles, size_t pitchColorTiles, uint2* a, uint2* b, unsigned subNetCount, int minY, int maxY, int minX, int maxX)
 {
-  int y = blockIdx.y * blockDim.y + threadIdx.y;
-  int x = blockIdx.x * blockDim.x + threadIdx.x;
+  int y = blockIdx.y * blockDim.y + threadIdx.y + minY;
+  int x = blockIdx.x * blockDim.x + threadIdx.x + minX;
   int yrange = maxY - minY + 1;
   int xrange = maxX - minX + 1;
-  if (y <= yrange && x <= xrange)
+  if (y >= minY && y <= maxY && x >= minX && x <= maxX)
   {
+    IdType* elem = (IdType*)((char*)colorTiles + y * pitchColorTiles) + x;
     for(int i = 0; i < subNetCount; ++i)
     {
       if (a[i].x <= x && b[i].x >= x && a[i].y <= y && b[i].y >= y)
       {
-        colorTiles[y*yrange+x] = i;
+        *elem = i;
         break;
       }
     }
