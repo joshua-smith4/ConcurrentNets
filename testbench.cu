@@ -76,14 +76,6 @@ int main() {
   {
     for(int j = 0; j < N; ++i)
     {
-      assert(c[i][j] == a[i][j] + b[i][j]);
-    }
-  }
-  std::cout << "Passed!\n";
-  for (int i = 0; i < N; ++i)
-  {
-    for(int j = 0; j < N; ++i)
-    {
       std::cout << a[i][j] << " ";
     }
     std::cout << std::endl;
@@ -104,6 +96,14 @@ int main() {
     }
     std::cout << std::endl;
   }
+  for (int i = 0; i < N; ++i)
+  {
+    for(int j = 0; j < N; ++i)
+    {
+      assert(c[i][j] == a[i][j] + b[i][j]);
+    }
+  }
+  std::cout << "Passed!\n";
 
   for(int i = 0; i < N; ++i)
   {
