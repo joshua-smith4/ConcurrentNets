@@ -40,6 +40,24 @@ int main() {
       b[i][j] = rand() % 100;
     }
   }
+
+  for (int i = 0; i < N; ++i)
+  {
+    for(int j = 0; j < N; ++i)
+    {
+      std::cout << a[i][j] << " ";
+    }
+    std::cout << std::endl;
+  }
+  for (int i = 0; i < N; ++i)
+  {
+    for(int j = 0; j < N; ++i)
+    {
+      std::cout << b[i][j] << " ";
+    }
+    std::cout << std::endl;
+  }
+
   // std::generate(vec_a.begin(), vec_a.end(), [&](){ return dis(gen); });
   // std::generate(vec_b.begin(), vec_b.end(), [&](){ return dis(gen); });
   std::cout << "finished generating numbers\n";
