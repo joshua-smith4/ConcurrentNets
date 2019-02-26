@@ -44,18 +44,17 @@ __global__ void colorTiles_shared(unsigned* colorTiles, size_t pitchColorTiles, 
 {
   int x = blockIdx.x * blockDim.x + threadIdx.x + minX;
   int y = blockIdx.y * blockDim.y + threadIdx.y + minY;
-  __shared__ uint2 a_shared[subNetCount];
-  __shared__ uint2 b_shared[subNetCount];
+  extern __shared__ uint2 ab_shared[];
   int index = blockDim.x*gridDim.x*(blockIdx.y*blockDim.y+threadIdx.y)+threadIdx.x;
   if(index < subNetCount*2)
   {
     if(index < subNetCount)
     {
-      a_shared[index] = a[index];
+      ab_shared[index] = a[index];
     }
     else
     {
-      b_shared[index] = b[index];
+      ab_shared[index] = b[index];
     }
   }
   __syncthreads();
@@ -64,7 +63,7 @@ __global__ void colorTiles_shared(unsigned* colorTiles, size_t pitchColorTiles, 
     IdType* elem = (IdType*)((char*)colorTiles + y * pitchColorTiles) + x;
     for(int i = 0; i < subNetCount; ++i)
     {
-      if (a_shared[i].x <= x && b_shared[i].x >= x && a_shared[i].y <= y && b_shared[i].y >= y)
+      if (ab_shared[i].x <= x && ab_shared[i+subNetCount].x >= x && ab_shared[i].y <= y && ab_shared[i+subNetCount].y >= y)
       {
         *elem = i;
         break;
