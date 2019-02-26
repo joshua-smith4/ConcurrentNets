@@ -55,15 +55,15 @@ int main() {
   cudaMemcpy2D(d_a, pitch_a, a, sizeof(int)*Nrow, sizeof(int)*Nrow, Ncol, cudaMemcpyHostToDevice);
   cudaMemcpy2D(d_b, pitch_b, b, sizeof(int)*Nrow, sizeof(int)*Nrow, Ncol, cudaMemcpyHostToDevice);
 
-  const unsigned THREADS_PER_BLOCK_ROW = 5;
-  const unsigned THREADS_PER_BLOCK_COL = 5;
-  const unsigned NUM_BLOCKS_ROW =
-      (Nrow + THREADS_PER_BLOCK_ROW - 1) / THREADS_PER_BLOCK_ROW;
-  const unsigned NUM_BLOCKS_COL =
-      (Ncol + THREADS_PER_BLOCK_COL - 1) / THREADS_PER_BLOCK_COL;
+  const unsigned THREADS_PER_BLOCK_X = 5;
+  const unsigned THREADS_PER_BLOCK_Y = 5;
+  const unsigned NUM_BLOCKS_X =
+      (Ncol + THREADS_PER_BLOCK_X - 1) / THREADS_PER_BLOCK_X;
+  const unsigned NUM_BLOCKS_Y =
+      (Nrow + THREADS_PER_BLOCK_Y - 1) / THREADS_PER_BLOCK_Y;
 
-  dim3 gridDim(NUM_BLOCKS_ROW, NUM_BLOCKS_COL);
-  dim3 blockDim(THREADS_PER_BLOCK_COL, THREADS_PER_BLOCK_ROW);
+  dim3 gridDim(NUM_BLOCKS_X, NUM_BLOCKS_Y);
+  dim3 blockDim(THREADS_PER_BLOCK_Y, THREADS_PER_BLOCK_X);
   addVec<<<gridDim, blockDim>>>(d_a, pitch_a, d_b, pitch_b, d_c, pitch_c, Nrow, Ncol);
 
   int c[Nrow][Ncol];
