@@ -41,23 +41,6 @@ int main() {
     }
   }
 
-  for (int i = 0; i < N; ++i)
-  {
-    for(int j = 0; j < N; ++i)
-    {
-      std::cout << a[i][j] << " ";
-    }
-    std::cout << std::endl;
-  }
-  for (int i = 0; i < N; ++i)
-  {
-    for(int j = 0; j < N; ++i)
-    {
-      std::cout << b[i][j] << " ";
-    }
-    std::cout << std::endl;
-  }
-
   // std::generate(vec_a.begin(), vec_a.end(), [&](){ return dis(gen); });
   // std::generate(vec_b.begin(), vec_b.end(), [&](){ return dis(gen); });
   std::cout << "finished generating numbers\n";
@@ -91,7 +74,7 @@ int main() {
 
   for (int i = 0; i < N; ++i)
   {
-    for(int j = 0; j < N; ++i)
+    for(int j = 0; j < N; ++j)
     {
       std::cout << a[i][j] << " ";
     }
@@ -99,7 +82,7 @@ int main() {
   }
   for (int i = 0; i < N; ++i)
   {
-    for(int j = 0; j < N; ++i)
+    for(int j = 0; j < N; ++j)
     {
       std::cout << b[i][j] << " ";
     }
@@ -107,7 +90,7 @@ int main() {
   }
   for (int i = 0; i < N; ++i)
   {
-    for(int j = 0; j < N; ++i)
+    for(int j = 0; j < N; ++j)
     {
       std::cout << c[i][j] << " ";
     }
@@ -115,7 +98,7 @@ int main() {
   }
   for (int i = 0; i < N; ++i)
   {
-    for(int j = 0; j < N; ++i)
+    for(int j = 0; j < N; ++j)
     {
       assert(c[i][j] == a[i][j] + b[i][j]);
     }
