@@ -18,7 +18,7 @@ using std::min;
 
 const unsigned THREADS_PER_BLOCK_X = 32;
 const unsigned THREADS_PER_BLOCK_Y = 32;
-const unsigned NUM_CONCURRENCY_BINS = 128;
+const unsigned NUM_CONCURRENCY_BINS = 32;
 const unsigned SUBNET_COUNT_GPU_THRESHOLD = 20;
 
 Scheduler::Scheduler(DB& _db, const CommandLine& _params) :  db(_db), params(_params)
@@ -253,8 +253,9 @@ int Scheduler::findConcurrencyGPU(SubNetQueue& subNetsQueue, SubNetQueue& concur
 
 	uint2 a, b;
 	Point A, B;
-	uint2* hostA = (uint2*)malloc(sizeof(uint2)*subNetCount); // deallocated
-	uint2* hostB = (uint2*)malloc(sizeof(uint2)*subNetCount); // deallocated
+	vector<uint2> hostA, hostB;
+	hostA.reserve(subNetCount);
+	hostB.reserve(subNetCount);
 	unsigned minX = db.xTiles;
 	unsigned maxX = 0;
 	unsigned minY = db.yTiles;
@@ -271,8 +272,8 @@ int Scheduler::findConcurrencyGPU(SubNetQueue& subNetsQueue, SubNetQueue& concur
 		b.x = max(A.x, B.x);
 		b.y = max(A.y, B.y);
 
-		hostA[i] = a;
-		hostB[i] = b;
+		hostA.push_back(a);
+		hostB.push_back(b);
 
 		if (minX > a.x)
 			minX = a.x;
@@ -290,8 +291,8 @@ int Scheduler::findConcurrencyGPU(SubNetQueue& subNetsQueue, SubNetQueue& concur
 	uint2* deviceB;
 	gpuErrchk(cudaMalloc((void**)&deviceB, abSize));// deallocated
 
-	gpuErrchk(cudaMemcpy(deviceA, hostA, abSize, cudaMemcpyHostToDevice));
-	gpuErrchk(cudaMemcpy(deviceB, hostB, abSize, cudaMemcpyHostToDevice));
+	gpuErrchk(cudaMemcpy(deviceA, hostA.data(), abSize, cudaMemcpyHostToDevice));
+	gpuErrchk(cudaMemcpy(deviceB, hostB.data(), abSize, cudaMemcpyHostToDevice));
 
 	const unsigned Nx = maxX - minX + 1;
 	const unsigned Ny = maxY - minY + 1;

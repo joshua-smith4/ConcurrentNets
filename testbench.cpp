@@ -1,38 +1,123 @@
-#include <iostream>
+#include <algorithm>
+#include <cassert>
 #include <cstdlib>
+#include <iostream>
+#include <random>
+#include <vector>
 
-template <unsigned N>
-struct ParallelHistAccumulator
+__global__ void addVec(int *a, size_t pitch_a, int *b, size_t pitch_b, int *c, size_t pitch_c, int N)
 {
-public:
-  unsigned* bins[N];
-  inline __device__ void init(unsigned numBins)
+  int i = blockIdx.x * blockDim.x + threadIdx.x;
+  int j = blockIdx.y * blockDim.y + threadIdx.y;
+  if (i < N && j < N)
   {
-    
-    for(auto i = 0u; i < N; ++i)
+    int* aElem = (int*)((char*)a + j * pitch_a) + i;
+    int* bElem = (int*)((char*)b + j * pitch_b) + i;
+    int* cElem = (int*)((char*)c + j * pitch_c) + i;
+    *c = *a + *b;
+  }
+}
+
+int main() {
+  const unsigned N = 10;
+  std::random_device rd;
+  std::mt19937 gen(rd());
+  std::uniform_int_distribution<> dis(1, 10000);
+  int **a = (int**)std::malloc(sizeof(int *) * N);
+  for (int i = 0; i < N; ++i)
+  {
+    a[i] = std::malloc(sizeof(int) * N);
+    for (int j = 0; j < N; ++j)
+      a[i][j] = rand() % 100;
+  }
+
+  int **b = (int**)std::malloc(sizeof(int *) * N);
+  for (int i = 0; i < N; ++i)
+  {
+    b[i] = std::malloc(sizeof(int) * N);
+    for (int j = 0; j < N; ++j)
+      b[i][j] = rand() % 100;
+  }
+  // std::generate(vec_a.begin(), vec_a.end(), [&](){ return dis(gen); });
+  // std::generate(vec_b.begin(), vec_b.end(), [&](){ return dis(gen); });
+  std::cout << "finished generating numbers\n";
+  int *d_a, *d_b, *d_c;
+  std::size_t pitch_a, pitch_b, pitch_c;
+  cudaMallocPitch(&d_a, &pitch_a, sizeof(int)*N, N);
+  cudaMallocPitch(&d_b, &pitch_b, sizeof(int)*N, N);
+  cudaMallocPitch(&d_c, &pitch_c, sizeof(int)*N, N);
+
+  cudaMemcpy2D(d_a, pitch_a, a, sizeof(int)*N, sizeof(int)*N, N, cudaMemcpyHostToDevice);
+  cudaMemcpy2D(d_b, pitch_a, a, sizeof(int)*N, sizeof(int)*N, N, cudaMemcpyHostToDevice);
+
+  const unsigned THREADS_PER_BLOCK_X = 10;
+  const unsigned THREADS_PER_BLOCK_Y = 10;
+  const unsigned NUM_BLOCKS_X =
+      (N + THREADS_PER_BLOCK_X - 1) / THREADS_PER_BLOCK_X;
+  const unsigned NUM_BLOCKS_Y =
+      (N + THREADS_PER_BLOCK_Y - 1) / THREADS_PER_BLOCK_Y;
+
+  dim3 gridDim(NUM_BLOCKS_Y, NUM_BLOCKS_X);
+  dim3 blockDim(THREADS_PER_BLOCK_Y, THREADS_PER_BLOCK_X);
+  addVec<<<NUM_BLOCKS, THREADS_PER_BLOCK>>>(d_a, d_b, d_c, N);
+
+  int **c = (int**)std::malloc(sizeof(int *) * N);
+  for(int i = 0; i < N; ++i)
+  {
+    c[i] = std::malloc(sizeof(int)*N)
+  }
+  cudaMemcpy2D(c, sizeof(int)*N, d_c, pitch_c, sizeof(int) * N, N, cudaMemcpyDeviceToHost);
+
+  cudaFree(d_a);
+  cudaFree(d_b);
+  cudaFree(d_c);
+
+  for (int i = 0; i < N; ++i)
+  {
+    for(int j = 0; j < N; ++i)
     {
-      bins[i] = new unsigned[numBins];
+      assert(c[i][j] == a[i][j] + b[i][j]);
     }
   }
-  void cleanup()
+  std::cout << "Passed!\n";
+  for (int i = 0; i < N; ++i)
   {
-    for(auto i = 0u; i < N; ++i)
+    for(int j = 0; j < N; ++i)
     {
-      delete[] bins[i];
+      std::cout << a[i][j] << " ";
     }
+    std::cout << std::endl;
   }
-  unsigned incrementBin(unsigned bin)
+  for (int i = 0; i < N; ++i)
   {
-    return 0u;
+    for(int j = 0; j < N; ++i)
+    {
+      std::cout << b[i][j] << " ";
+    }
+    std::cout << std::endl;
   }
-};
+  for (int i = 0; i < N; ++i)
+  {
+    for(int j = 0; j < N; ++i)
+    {
+      std::cout << c[i][j] << " ";
+    }
+    std::cout << std::endl;
+  }
 
-int main()
-{
-  ParallelHistAccumulator<20> a;
-  std::cout << sizeof(a) << "\n";
-  a.init(20);
-  std::cout << sizeof(a) << "\n";
-  a.cleanup();
-  return 0;
+  for(int i = 0; i < N; ++i)
+  {
+    std::free(a[i]);
+  }
+  std::free(a);
+  for(int i = 0; i < N; ++i)
+  {
+    std::free(b[i]);
+  }
+  std::free(b);
+  for(int i = 0; i < N; ++i)
+  {
+    std::free(c[i]);
+  }
+  std::free(c);
 }
