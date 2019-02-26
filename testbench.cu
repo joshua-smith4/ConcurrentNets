@@ -48,27 +48,27 @@ int main() {
   std::cout << "finished generating numbers\n";
   int *d_a, *d_b, *d_c;
   std::size_t pitch_a, pitch_b, pitch_c;
-  cudaMallocPitch(&d_a, &pitch_a, sizeof(int)*Nrow, Ncol);
-  cudaMallocPitch(&d_b, &pitch_b, sizeof(int)*Nrow, Ncol);
-  cudaMallocPitch(&d_c, &pitch_c, sizeof(int)*Nrow, Ncol);
+  cudaMallocPitch(&d_a, &pitch_a, sizeof(int)*Ncol, Nrow);
+  cudaMallocPitch(&d_b, &pitch_b, sizeof(int)*Ncol, Nrow);
+  cudaMallocPitch(&d_c, &pitch_c, sizeof(int)*Ncol, Nrow);
 
-  cudaMemcpy2D(d_a, pitch_a, a, sizeof(int)*Nrow, sizeof(int)*Nrow, Ncol, cudaMemcpyHostToDevice);
-  cudaMemcpy2D(d_b, pitch_b, b, sizeof(int)*Nrow, sizeof(int)*Nrow, Ncol, cudaMemcpyHostToDevice);
+  cudaMemcpy2D(d_a, pitch_a, a, sizeof(int)*Ncol, sizeof(int)*Ncol, Nrow, cudaMemcpyHostToDevice);
+  cudaMemcpy2D(d_b, pitch_b, b, sizeof(int)*Ncol, sizeof(int)*Ncol, Nrow, cudaMemcpyHostToDevice);
 
   const unsigned THREADS_PER_BLOCK_X = 5;
-  const unsigned THREADS_PER_BLOCK_Y = 5;
+  const unsigned THREADS_PER_BLOCK_Y = 7;
   const unsigned NUM_BLOCKS_X =
       (Ncol + THREADS_PER_BLOCK_X - 1) / THREADS_PER_BLOCK_X;
   const unsigned NUM_BLOCKS_Y =
       (Nrow + THREADS_PER_BLOCK_Y - 1) / THREADS_PER_BLOCK_Y;
 
   dim3 gridDim(NUM_BLOCKS_X, NUM_BLOCKS_Y);
-  dim3 blockDim(THREADS_PER_BLOCK_Y, THREADS_PER_BLOCK_X);
+  dim3 blockDim(THREADS_PER_BLOCK_X, THREADS_PER_BLOCK_Y);
   addVec<<<gridDim, blockDim>>>(d_a, pitch_a, d_b, pitch_b, d_c, pitch_c, Nrow, Ncol);
 
   int c[Nrow][Ncol];
 
-  cudaMemcpy2D(c, sizeof(int)*Nrow, d_c, pitch_c, sizeof(int) * Nrow, Ncol, cudaMemcpyDeviceToHost);
+  cudaMemcpy2D(c, sizeof(int)*Ncol, d_c, pitch_c, sizeof(int) * Ncol, Nrow, cudaMemcpyDeviceToHost);
 
   cudaFree(d_a);
   cudaFree(d_b);
