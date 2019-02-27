@@ -1,0 +1,9 @@
+CPU Execution:
+
+GPU Execution Shared:
+kernel requiring most time - colorTile - 81.4% importance - total runtime 721.04 ms
+sumhist - 14.8% importance - total runtime 130.75 ms
+histCalc - 2.1% - total runtime 18.97 ms
+
+GPU Execution No Shared:
+kernel requiring most time - colorTile

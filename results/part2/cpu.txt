@@ -1,0 +1,26 @@
+Scheduler (64-bit) Jan 29 2019 @ 14:35:58
+Compiled with g++ 4.8.5
+Cuda compilation tools, release 9.1, V9.1.85
+
+== User Parameters ==
+Input file:            ../test.gr
+Output file:           cpu_output.txt
+Computing platform:    CPU
+Scheduling window:     256
+Print progress:        Disabled
+
+== Initialize Data ==
+Reading from file "../test.gr".
+Reading Nets ... Done.
+Grid size 324 x 324
+Layers 2
+Read 36214 nets
+Decomposed into 56075 subnets
+
+== Start Computation ==
+Extracting Concurrent Nets ... Done.
+
+Total computational time: 34.4779 s
+
+== Save Results ==
+Writing to "cpu_output.txt" ... Done.

@@ -1,0 +1,28 @@
+Scheduler (64-bit) Jan 29 2019 @ 14:35:58
+Compiled with g++ 4.8.5
+Cuda compilation tools, release 9.1, V9.1.85
+
+== User Parameters ==
+Input file:            ../test.gr
+Output file:           gpu_output_noshared.txt
+Computing platform:    GPU
+Scheduling window:     256
+Print progress:        Disabled
+
+== Initialize Data ==
+Reading from file "../test.gr".
+Reading Nets ... Done.
+Grid size 324 x 324
+Layers 2
+Read 36214 nets
+Decomposed into 56075 subnets
+
+== Start Computation ==
+Found CUDA 3.7 device
+Found CUDA 3.7 device
+Extracting Concurrent Nets ... Done.
+
+Total computational time: 4.22592 s
+
+== Save Results ==
+Writing to "gpu_output_noshared.txt" ... Done.
