@@ -16,14 +16,26 @@
 \gdef\HyperFirstAtBeginDocument#1{#1}
 \providecommand\HyField@AuxAddToFields[1]{}
 \providecommand\HyField@AuxAddToCoFields[2]{}
-\citation{goodfellow2014}
-\bibstyle{IEEEtran}
-\bibdata{ref}
-\bibcite{goodfellow2014}{1}
 \@writefile{toc}{\contentsline {section}{\numberline {I}Introduction}{1}{section.1}}
-\@writefile{toc}{\contentsline {subsection}{\numberline {\unhbox \voidb@x \hbox {I-A}}Subsection Heading Here}{1}{subsection.1.1}}
-\@writefile{toc}{\contentsline {subsubsection}{\numberline {\unhbox \voidb@x \hbox {I-A}1}Subsubsection Heading Here}{1}{subsubsection.1.1.1}}
-\@writefile{toc}{\contentsline {section}{\numberline {II}Conclusion}{1}{section.2}}
-\@writefile{toc}{\contentsline {section}{Appendix\nobreakspace  A: Proof of the First Zonklar Equation}{1}{section*.1}}
-\@writefile{toc}{\contentsline {section}{Appendix\nobreakspace  B}{1}{section*.2}}
-\@writefile{toc}{\contentsline {section}{References}{1}{section*.4}}
+\@writefile{toc}{\contentsline {section}{\numberline {II}Familiarization with CUDA and GPU Device}{1}{section.2}}
+\@writefile{lof}{\contentsline {figure}{\numberline {1}{\ignorespaces Bandwidth measurements of varying data transfer sizes between devices and host.}}{1}{figure.1}}
+\newlabel{fig:bandwidth}{{1}{1}{Bandwidth measurements of varying data transfer sizes between devices and host}{figure.1}{}}
+\@writefile{toc}{\contentsline {section}{\numberline {III}CPU Analysis and Parallel Design}{1}{section.3}}
+\@writefile{lof}{\contentsline {figure}{\numberline {2}{\ignorespaces Time analysis of serial algorithm executed on the CPU.}}{1}{figure.2}}
+\newlabel{fig:cpu_time}{{2}{1}{Time analysis of serial algorithm executed on the CPU}{figure.2}{}}
+\@writefile{toc}{\contentsline {section}{\numberline {IV}Methods}{2}{section.4}}
+\@writefile{toc}{\contentsline {section}{\numberline {V}Shared Memory vs Global Memory Implemenations}{2}{section.5}}
+\@writefile{lof}{\contentsline {figure}{\numberline {3}{\ignorespaces Speedup analysis of both implementations: global memory and shared memory.}}{2}{figure.3}}
+\newlabel{fig:globalvshared}{{3}{2}{Speedup analysis of both implementations: global memory and shared memory}{figure.3}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {4}{\ignorespaces Time analysis of GPU implementation without shared memory.}}{2}{figure.4}}
+\newlabel{fig:gpu_noshared_time}{{4}{2}{Time analysis of GPU implementation without shared memory}{figure.4}{}}
+\@writefile{toc}{\contentsline {section}{\numberline {VI}Speedup Analysis}{2}{section.6}}
+\@writefile{lof}{\contentsline {figure}{\numberline {5}{\ignorespaces Time analysis of GPU implementation with shared memory.}}{3}{figure.5}}
+\newlabel{fig:gpu_shared_time}{{5}{3}{Time analysis of GPU implementation with shared memory}{figure.5}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {6}{\ignorespaces Speedup analysis of CPU and GPU with shared memory implementations.}}{3}{figure.6}}
+\newlabel{fig:speedup}{{6}{3}{Speedup analysis of CPU and GPU with shared memory implementations}{figure.6}{}}
+\@writefile{toc}{\contentsline {section}{\numberline {VII}Results and Conclusion}{3}{section.7}}
+\@writefile{lot}{\contentsline {table}{\numberline {I}{\ignorespaces Run times: scheduling window size of 256.}}{3}{table.1}}
+\newlabel{tab:runtime}{{I}{3}{Run times: scheduling window size of 256}{table.1}{}}
+\@writefile{toc}{\contentsline {section}{Appendix\nobreakspace  A: Device Query Results}{3}{section*.1}}
+\@writefile{toc}{\contentsline {section}{Appendix\nobreakspace  B: Bandwidth Test}{3}{section*.2}}
